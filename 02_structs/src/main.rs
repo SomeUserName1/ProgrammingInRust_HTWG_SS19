@@ -42,23 +42,54 @@ impl Rectangle {
 }
 
 #[derive(Debug)]
-struct Node<'a> {
+struct Node<'a><T: Ord> {
     id: i32,
-    children: Vec<Option<&'a Box<Self<'a>>>>,
+    value: Option<T: Ord>,
+    children: mut Vec<Option<&'a Self<'a>>>,
 }
-
 impl Node {
-    fn new(id: i32, children: Vec<Option<&'a Box<Self<'a>>>>) -> Self {
+    fn new(id: i32, value: Option<T>, children: Vec<Option<&'a Self<'a><T: Ord>>>) -> Self {
         Node {
             id,
+            value,
             children
         }
     }
 }
 
 [#derive(Debug)]
-struct BTree<'a> {
-    root: Box<Node<'a>>
+struct BTree<'a><T: Ord> {
+    root: Node<'a><T: Ord>,
+    id_count: mut i32,
+    split_rate: i32
+}
+impl BTree {
+    fn new() -> Self {
+        Btree {
+            root: Node::new(0, Option::None ,Vec::new());
+        }
+    }
+
+    fn insert(value: Option<T: Ord>) {
+        match &self.root.children.len() {
+            0 => {
+                &self.id_count += 1;
+                &self.root.children.push(Node::new(&self.id_count, value, Vec::new()));
+            },
+            // insert at right place
+            d if d < &self.split_rate => {
+                for child in &self.root.children {
+                    match child.value {
+                        v if v < value {continue;},
+                        v if v > value {}
+                        // exchange
+                        // Rust linked list; too many linked lists with rust
+                }
+            },
+            // SPLIT!!
+            d if d > &self.split_rate => {}
+        }
+    }
 }
 
 fn main() { 
