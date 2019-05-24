@@ -1,5 +1,5 @@
-use std::sync::{Mutex, Arc};
-use std::thread;
+// use std::sync::{Mutex, Arc};
+// use std::thread;
 use std::fmt;
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ impl<T> List<T> {
         }
     }
     
-    fn insert(&mut self, value: T) {
+    fn insert(&mut self, _value: T) {
         unimplemented!()
     }
 }
