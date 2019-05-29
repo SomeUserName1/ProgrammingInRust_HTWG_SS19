@@ -74,18 +74,3 @@ impl PartialEq for Solution {
         self.0 == other.0 && self.1 == other.1
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_async_search0() {
-        assert_eq!(async_search(DIFFICULTY0), Ok(Solution(1574, "bde6977bd9de18c8c87d6da84ef49165be37f904cf9803d8dea237fe5d98d000".to_string())));
-    }
-
-    #[test]
-    fn test_async_search1() {
-        assert_eq!(async_search(DIFFICULTY1), Ok(Solution(3341, "ace3f7f0672635a4b3be1a036c2506d899ade343d6b799a22598c0a088d70000".to_string())));
-    }
-}

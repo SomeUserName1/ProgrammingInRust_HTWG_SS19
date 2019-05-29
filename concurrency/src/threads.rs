@@ -1,5 +1,5 @@
 use std::thread;
-use std::env::current_exe;
+// use std::env::current_exe;
 use std::cmp::min;
 
 const BASE: u32 = 10;
