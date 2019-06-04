@@ -1,5 +1,8 @@
-language: rust
-rust:
-  - stable
-
-before_install: cd blockchain 
+env:
+  - CRATE="blockchain"
+  - CRATE="presentation/concurrency"
+script:
+  - cd $CRATE
+  - cargo test -v
+  - cargo bench -v
+  - cargo doc
