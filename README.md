@@ -11,7 +11,9 @@ usable over LAN or WLAN.
 * **time:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Utilities for working with time-related functions in Rust.
 * **serde:**  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Serde is a framework for serializing and deserializing Rust data structures efficiently and generically
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Serde is a framework for serializing and deserializing Rust data structures efficiently 
+  and  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;generically
 * **serde_derive:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Macros 1.1 implementation of ```#[derive(Serialize, Deserialize)]```
 * **serde_json:**  
