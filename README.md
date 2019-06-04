@@ -32,3 +32,20 @@ usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functional
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pure rust implementation of OpenPGP. Following RFC4880 and RFC2440.
 * **tokyo:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A runtime for writing reliable, asynchronous, and slim applications with the Rust programming language.
+
+
+
+# Related Work
+Short Version:
+(https://www.youtube.com/watch?v=U8GGZ4TqlQs)[Video]
+(https://github.com/tensor-programming/Rust_block_chain)[Repo]
+
+Long Version:
+(https://www.youtube.com/playlist?list=PLwnSaD6BDfXL0RiKT_5nOIdxTxZWpPtAv)[Playlist]
+(https://medium.com/geeklaunch/blockchain-in-rust-01-blocks-hashing-4192f2265d3d)[Blog]
+(https://github.com/GeekLaunch/blockchain-rust/tree/bc663ec59d8a2490552e5dc7d998311acf8dd305)[Repo]
+
+Existing Frameworks
+(https://exonum.com/doc/version/latest/get-started/design-overview/)[Architecture]
+(https://exonum.com/doc/version/latest/get-started/create-service/)[Example implementation using the framework]
+(https://github.com/exonum/exonum)[Repo]
