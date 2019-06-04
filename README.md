@@ -15,7 +15,7 @@ for the sake of maturity and usability. But because we are fairly new to this to
 work which is required to accomplish these goals. But if it is feasible for us, we will decentralize the blockchain to be 
 usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functionalities.
 
-# Depedencies
+## Depedencies
 * **time:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Utilities for working with time-related functions in Rust.
 * **serde:**  
