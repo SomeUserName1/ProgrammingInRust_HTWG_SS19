@@ -1,5 +1,8 @@
 language: rust
-rust:
-  - stable
-
-before_install: cd concurrency 
+env:
+  - CRATE="blockchain"
+  - CRATE="presentations/concurrency/"
+script:
+  - cd $CRATE
+  - cargo build
+  - cargo test -v

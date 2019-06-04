@@ -1,0 +1,1 @@
+{"rustc":3433446036604226809,"features":"[\"SHA2\", \"default\", \"sha2\"]","target":8072561376768223277,"profile":9935990280773120926,"path":9436106083473314450,"deps":[["sha2 v0.4.2","sha2",5240000064942731832]],"local":[{"Precalculated":"0.1.0"}],"rustflags":[],"edition":"Edition2015"}
