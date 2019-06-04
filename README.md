@@ -35,10 +35,10 @@ usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functional
 
 
 
-# Related Work  
+## Related Work  
 Short Version:  
-[Video](https://www.youtube.com/watch?v=U8GGZ4TqlQs)
-[Repo](https://github.com/tensor-programming/Rust_block_chain)
+[Video](https://www.youtube.com/watch?v=U8GGZ4TqlQs)  
+[Repo](https://github.com/tensor-programming/Rust_block_chain)  
 
 Long Version:  
 [Playlist](https://www.youtube.com/playlist?list=PLwnSaD6BDfXL0RiKT_5nOIdxTxZWpPtAv)  
