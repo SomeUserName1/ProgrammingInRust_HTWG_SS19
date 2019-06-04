@@ -11,13 +11,11 @@ usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functional
 * **time:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Utilities for working with time-related functions in Rust.
 * **serde:**  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Serde is a framework for serializing and deserializing Rust data structures efficiently 
-  and  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;generically
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Serde is a framework for serializing and deserializing Rust data structures efficiently  and generically.
 * **serde_derive:**  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Macros 1.1 implementation of ```#[derive(Serialize, Deserialize)]```
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Macros 1.1 implementation of ```#[derive(Serialize, Deserialize)]```.
 * **serde_json:**  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A JSON serialization file format
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A JSON serialization file format.
 * **crypto-hash:**  
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Is a Rust wrapper around OS-level implementations of cryptographic hash functions.
 * **hex:**    
