@@ -2,4 +2,4 @@ language: rust
 rust:
   - stable
 
-before_install: cd concurrency 
+before_install: cd blockchain 
