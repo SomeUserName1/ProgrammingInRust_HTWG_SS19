@@ -5,7 +5,7 @@ blocks. We want these blocks to be able to contain generic data or transactions,
 of the pgp public key may, or may not be included in our project. Also it is our ambition to the decentralize this blockchain
 for the sake of maturity and usability. But because we are fairly new to this topic, we are not certain about the amount of 
 work which is required to accomplish these goals. But if it is feasible for us, we will decentralize the blockchain to be 
-usable over LAN or WLAN. Therefor maybe we will make use of tokyo's io functionalities.
+usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functionalities.
 
 # Depedencies
 * **time:**  
