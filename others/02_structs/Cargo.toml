@@ -1,7 +1,0 @@
-[package]
-name = "structs"
-version = "0.1.0"
-authors = ["Fabian Klopfer <fabian.klopfer@ieee.org>"]
-edition = "2018"
-
-[dependencies]
