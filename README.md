@@ -35,17 +35,17 @@ usable over LAN or WAN. Therefor maybe we will make use of tokyo's io functional
 
 
 
-# Related Work
-Short Version:
-(https://www.youtube.com/watch?v=U8GGZ4TqlQs)[Video]
-(https://github.com/tensor-programming/Rust_block_chain)[Repo]
+# Related Work  
+Short Version:  
+(https://www.youtube.com/watch?v=U8GGZ4TqlQs)[Video]  
+(https://github.com/tensor-programming/Rust_block_chain)[Repo]  
 
-Long Version:
-[Playlist](https://www.youtube.com/playlist?list=PLwnSaD6BDfXL0RiKT_5nOIdxTxZWpPtAv)
-[Blog](https://medium.com/geeklaunch/blockchain-in-rust-01-blocks-hashing-4192f2265d3d)
-[Repo](https://github.com/GeekLaunch/blockchain-rust/tree/bc663ec59d8a2490552e5dc7d998311acf8dd305)
+Long Version:  
+[Playlist](https://www.youtube.com/playlist?list=PLwnSaD6BDfXL0RiKT_5nOIdxTxZWpPtAv)  
+[Blog](https://medium.com/geeklaunch/blockchain-in-rust-01-blocks-hashing-4192f2265d3d)  
+[Repo](https://github.com/GeekLaunch/blockchain-rust/tree/bc663ec59d8a2490552e5dc7d998311acf8dd305)  
 
-Existing Frameworks
-[Architecture](https://exonum.com/doc/version/latest/get-started/design-overview/)
-[Example implementation using the framework](https://exonum.com/doc/version/latest/get-started/create-service/)
-[Repo](https://github.com/exonum/exonum)
+Existing Frameworks  
+[Architecture](https://exonum.com/doc/version/latest/get-started/design-overview/)  
+[Example implementation using the framework](https://exonum.com/doc/version/latest/get-started/create-service/)  
+[Repo](https://github.com/exonum/exonum)  
