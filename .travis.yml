@@ -1,3 +1,4 @@
+language: rust
 env:
   - CRATE="blockchain"
   - CRATE="presentation/concurrency"
