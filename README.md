@@ -1,4 +1,12 @@
-# Rust Crate
+
+# Rust Crate: Own Blockchain
+---
+
+## Participants:
+
+Felix Mayer, Stephan Perren, Fabian Klopfer
+
+## Description:
 
 Our plan is to write our own blockchain purely in rust. For this, we will make use of rusts concurrency features to mine new 
 blocks. We want these blocks to be able to contain generic data or transactions, signed with pgp signatures. The distribution
