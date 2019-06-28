@@ -1,1 +1,1 @@
-/// message definitions for blockchain functionalities
+// message definitions for blockchain functionalities

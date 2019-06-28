@@ -2,12 +2,9 @@
 //!
 //! Storage backend that persists data in the file system using a RocksDB database.
 use failure::Fail;
-#[cfg(not(test))]
-use rocksdb;
-#[cfg(test)]
-use rocksdb_mock as rocksdb;
+use rocksdb as rocksdb;
 
-use crate::storage::{Result, Storage};
+use super::storage::{Result, Storage};
 
 /// Rocksdb backend
 pub type Backend = rocksdb::DB;
@@ -17,6 +14,10 @@ pub type Backend = rocksdb::DB;
 struct Error(#[fail(cause)] rocksdb::Error);
 
 impl Storage for Backend {
+    fn open(&self, address: String) -> Result<()> {
+        unimplemented!()
+    }
+
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
         let result = Backend::get(self, &key)
             .map(|opt| opt.map(|dbvec| dbvec.to_vec()))
@@ -25,7 +26,7 @@ impl Storage for Backend {
     }
 
     fn put(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
-        Backend::put(self, key, value).map_err(Error)?;
+        Backend::put(self, &key, &value).map_err(Error)?;
         Ok(())
     }
 

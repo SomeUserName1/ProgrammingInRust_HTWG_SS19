@@ -2,7 +2,6 @@ use std::net;
 
 use uuid;
 use serde::{Serialize, Deserialize};
-use serde_derive;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum Msg {

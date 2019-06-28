@@ -22,11 +22,12 @@ tables) persistently
 ## Crypto: Everything related to cryptography
 - [ ] hashing functions 
 - [ ] the merkle tree implementation
-- [ ] generation of PGP keys
-- [ ] signature and verification
-- [ ] encryption and decryption of messages
+- [ ] (generation of PGP keys)
+- [ ] (signature and verification)
+- [ ] (encryption and decryption of messages)
 
-## P2P: Overlay P2P network in the style of [Kademila](https://sarwiki.informatik.hu-berlin.de/Kademlia)
+## P2P: Maybe [Crust](https://github.com/maidsafe/crust)
+Overlay P2P network in the style of [Kademila](https://sarwiki.informatik.hu-berlin.de/Kademlia)
 - [ ] Messages & Codec related to networking
 - [ ] Server: accepting incoming connections, answering peer discovery queries
 - [ ] Client: connecting to peers, querying for peers
@@ -54,6 +55,7 @@ or else [Merkle Tree Example/Implementation](https://github.com/SpinResearch/mer
 [Sha3](https://docs.rs/sha3/0.8.2/sha3/)  
 
 ### P2P:  
+[libp2p](https://docs.rs/libp2p/0.10.0/libp2p/)
 [Blog on Kademila for decentralized plattforms](https://medium.com/coinmonks/a-brief-overview-of-kademlia-and-its-use-in-various-decentralized-platforms-da08a7f72b8f)  
 [Paper](pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)  
 [Actix P2P example](https://github.com/mariocao/actix-p2p/tree/master/src)  

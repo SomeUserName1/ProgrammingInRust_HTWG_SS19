@@ -1,7 +1,10 @@
 /// basic block data structure
-use hash;
-use transaction::Transaction;
 use std::borrow::BorrowMut;
+
+use serde::Serialize;
+
+use crate::blockchain::transaction::{Transaction, Transactional};
+use crate::crypto::merkle;
 
 #[derive(Serialize, Debug)]
 pub struct BlockHeader {
@@ -14,19 +17,19 @@ pub struct BlockHeader {
 
 
 #[derive(Serialize, Debug)]
-pub struct Block {
+pub struct Block<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> {
     pub header: BlockHeader,
     count: u32,
-    transactions: Vec<Transaction>
+    transactions: Vec<Transaction<T>>
 }
 
-impl Block {
+impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> Block<T> {
     pub fn new(
         hash: String, 
         difficulty: u32, 
         miner_address: String,
         reward: f32,
-        transactions: &mut Vec<Transaction> 
+        transactions: &mut Vec<Transaction<T>>
                                         ) -> Self {
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
@@ -36,11 +39,7 @@ impl Block {
             difficulty
         };
 
-        let reward_trans = Transaction {
-            sender: String::from("Root"),
-            receiver: miner_address,
-            amount: reward
-        };
+        let reward_trans = T::genesis(miner_address, reward);
 
         let mut block = Block {
             header,
@@ -51,7 +50,7 @@ impl Block {
         block.transactions.push(reward_trans);
         block.transactions.append(transactions.borrow_mut());
         block.count = block.transactions.len() as u32;
-        block.header.merkle = Block::get_merkle(block.transactions.clone());
+        block.header.merkle = merkle::get_merkle(block.transactions.clone());
         block
     }
 }

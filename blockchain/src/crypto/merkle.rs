@@ -1,8 +1,7 @@
-use hash::hash;
-// use trancations;
+use super::hash::hash;
+use crate::blockchain::transaction::Transaction;
 
-
-fn get_merkle(curr_trans: Vec<Transaction>) -> String {
+pub fn get_merkle<T: serde::Serialize + std::fmt::Debug + std::clone::Clone>(curr_trans: Vec<Transaction<T>>) -> String {
     let mut merkle = Vec::new();
 
     for t in &curr_trans {
@@ -22,5 +21,11 @@ fn get_merkle(curr_trans: Vec<Transaction>) -> String {
         let nh = hash(&h1);
         merkle.push(nh);
     }
-    merkle.pop().unwrap()
+    match merkle.pop() {
+        Some(a) => a,
+        None => {
+            println!("Got no merkle as I commented out the reward block123");
+            panic!("duh");
+        }
+    }
 }

@@ -1,12 +1,11 @@
 use std::io;
 use std::str;
 
-use tokio::codec::{Encoder, Decoder};
 use tokio_core::io::Codec;
 use tokio_core::io::EasyBuf;
 use serde_json;
 
-use messages::Msg;
+use super::messages::Msg;
 
 /// Encoding and decoding; include encryption
 pub struct MsgCodec; // json line

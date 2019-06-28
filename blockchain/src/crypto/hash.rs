@@ -1,6 +1,7 @@
+use std::fmt::Write;
+
 use sha3::{Sha3_512, Digest};
 use serde;
-use serde_json;
 
 pub fn hash<T: serde::Serialize>(item: &T) -> String {
 

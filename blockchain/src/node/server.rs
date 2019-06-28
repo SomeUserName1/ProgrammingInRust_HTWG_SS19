@@ -1,1 +1,1 @@
-/// Handle all blockchain functionality related events
+// Handle all blockchain functionality related events

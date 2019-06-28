@@ -1,7 +1,0 @@
-[package]
-name = "storage"
-version = "0.1.0"
-authors = ["Chuggi, Chuggo, Chuggu"]
-workspace = ".."
-
-[dependencies]

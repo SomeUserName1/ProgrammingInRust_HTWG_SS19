@@ -2,13 +2,19 @@
 //!
 //! Storage backend that keeps data in a heap-allocated HashMap.
 use std::collections::HashMap;
+use std::error::Error;
 
-use crate::storage::{Result, Storage};
+use super::storage::{Result, Storage};
+
 
 /// HashMap backend
 pub type Backend = HashMap<Vec<u8>, Vec<u8>>;
 
 impl Storage for Backend {
+    fn open(&self, address: String) -> Result<()> {
+        unimplemented!()
+    }
+
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
         Ok(Backend::get(self, key).map(|slice| slice.to_vec()))
     }

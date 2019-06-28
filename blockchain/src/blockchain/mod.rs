@@ -1,5 +1,3 @@
-extern crate chrono;
-extern crate serde;
-
 mod block;
-mod chain;
+pub mod chain;
+pub mod transaction;

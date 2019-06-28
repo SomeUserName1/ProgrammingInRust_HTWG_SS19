@@ -3,15 +3,26 @@
 /// Both peer and cli
 ///
 /// TODO unify with all other modules
+#[macro_use]
+extern crate unwrap;
+#[macro_use]
+extern crate log;
+
+extern crate crust;
+
 mod blockchain;
+mod crypto;
 mod node;
-mod storage_mgr;
+mod p2p;
+mod storage;
+
 
 use std::io;
 use std::process;
 use std::io::Write;
-use chuggichain_rs::{transaction, chain};
 
+use blockchain::chain;
+use blockchain::transaction::{CryptoPayload, Transactional};
 
 
 fn main() {
@@ -27,7 +38,7 @@ fn main() {
     io::stdin().read_line(&mut difficulty).expect("IO Error");
     let diff = difficulty.trim().parse::<u32>().expect("we need an integer");
     println!("generating genesis block! ");
-    let mut chain = chain::Chain::new(miner_addr.trim().to_string(), diff);
+    let mut chain = chain::Chain::<CryptoPayload>::new(miner_addr.trim().to_string(), diff);
 
     loop {
         println!("Menu");
@@ -63,9 +74,14 @@ fn main() {
                 io::stdout().flush().expect("IO Error");
                 io::stdin().read_line(&mut amount).expect("IO Error");
 
-                let res = chain.add_transaction(&mut vec![transaction::Transaction::new(sender.trim().to_string(),
-                                                                                        receiver.trim().to_string(),
-                                                                                        amount.trim().parse().unwrap())]);
+                let res = chain.add_transaction(&mut vec![
+                    CryptoPayload::new(
+                        sender.trim().to_string(),
+                        CryptoPayload {
+                            receiver: receiver.trim().to_string(),
+                            amount: amount.trim().parse().unwrap(),
+                        })
+                ]);
 
                 match res {
                     true => println!("transaction added"),
