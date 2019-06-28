@@ -1,0 +1,6 @@
+[package]
+name = "concurrency"
+version = "0.1.0"
+authors = ["Fabian Klopfer <fabian.klopfer@uni-konstanz.de>"]
+edition = "2018"
+
