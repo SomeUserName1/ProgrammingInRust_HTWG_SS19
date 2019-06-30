@@ -2,9 +2,7 @@ language: rust
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
-  - CRATE="presentations/pattern_matching/"
 script:
   - cd $CRATE
   - cargo build
   - cargo test -v
-  - cargo doc
