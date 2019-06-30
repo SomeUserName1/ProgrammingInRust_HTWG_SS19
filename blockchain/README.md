@@ -3,7 +3,7 @@
 1. node: chain, mining, transaction, mining & further consensus; Pulling all other parts together + cli
 mechanisms (main structs & server aka backend)
 2. crypto: KeyGen, Hashing, Encryption, signature, Merkle (cryptography)
-3. p2p: Messages, Routing/Peer list, Channels (Communication)
+3. node: Messages, Routing/Peer list, Channels (Communication)
 4. storage: persist information (chain bookkeeping & mining)
 5. __Optional__ wallet: we would need a wallet __in theory__ to manage keys, create tranactions, provide a cli and sth 
 UI-like

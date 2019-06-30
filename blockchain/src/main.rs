@@ -1,19 +1,9 @@
-/// Handle all application layer requests: integrate broadcasted signed transactions, freshly
-/// mined blocks, update difficulty and reward depending on number of blocks and participants
-/// Both peer and cli
+/// Start a node and provide a cli to it
 ///
 /// TODO unify with all other modules
-#[macro_use]
-extern crate unwrap;
-#[macro_use]
-extern crate log;
-
-extern crate crust;
-
 mod blockchain;
 mod crypto;
 mod node;
-mod p2p;
 mod storage;
 
 

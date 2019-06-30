@@ -41,12 +41,6 @@ pub struct CodePayload {
     pub commit_message: String,
 }
 
-
-pub struct TimestampObjectPayload<O> {
-    pub object: O,
-    pub timestamp: chrono::Utc,
-}
-
 impl Transactional<CryptoPayload> for CryptoPayload {
     fn genesis(miner_address: String, reward: f32) -> Transaction<CryptoPayload> {
         Transaction {
@@ -59,7 +53,7 @@ impl Transactional<CryptoPayload> for CryptoPayload {
     }
 }
 impl Transactional<VotePayload> for VotePayload {
-    fn genesis(miner_address: String, reward: f32) -> Transaction<VotePayload> {
+    fn genesis(_miner_address: String, _reward: f32) -> Transaction<VotePayload> {
         Transaction {
             sender: String::from("Root"),
             payload: VotePayload {
@@ -69,7 +63,7 @@ impl Transactional<VotePayload> for VotePayload {
     }
 }
 impl Transactional<CodePayload> for CodePayload {
-    fn genesis(miner_address: String, reward: f32) -> Transaction<CodePayload>  {
+    fn genesis(_miner_address: String, _reward: f32) -> Transaction<CodePayload>  {
         Transaction {
             sender: String::from("Root"),
             payload: CodePayload {

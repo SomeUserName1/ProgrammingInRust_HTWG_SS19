@@ -1,4 +1,4 @@
 mod client;
 mod codec;
-mod messages;
+pub mod messages;
 mod server;

@@ -57,7 +57,7 @@ impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T
                                self.miner_addr.clone(), self.reward, &mut self.curr_trans);
 
 
-        //Chain::proof_of_work(&mut block.header);
+        Chain::<T>::proof_of_work(&mut block.header);
 
         println!("{:#?}", &block);
         self.chain.push(block);

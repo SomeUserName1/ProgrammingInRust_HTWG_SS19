@@ -14,7 +14,7 @@ pub type Backend = rocksdb::DB;
 struct Error(#[fail(cause)] rocksdb::Error);
 
 impl Storage for Backend {
-    fn open(&self, address: String) -> Result<()> {
+    fn open(&self, _address: String) -> Result<()> {
         unimplemented!()
     }
 
