@@ -5,17 +5,18 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::time::Duration;
-use rand::{thread_rng, Rng, ThreadRng};
+use rand::{thread_rng, Rng, rngs::ThreadRng};
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc;
 
 use tokio_core::io::Io;
+use tokio_core::net::{TcpStream, TcpListener};
 use tokio_timer::Timer;
 use tokio_core::reactor::Handle;
 
 // new tokio
-use tokio::io;
-use tokio::net::{TcpListener, TcpStream};
+//use tokio::io;
+//use tokio::net::{TcpListener, TcpStream};
 
 use super::messages::Msg;
 use super::codec::MsgCodec;
