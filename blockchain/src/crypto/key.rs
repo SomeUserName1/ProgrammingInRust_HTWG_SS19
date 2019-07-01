@@ -1,18 +1,14 @@
-//use sequoia_openpgp as openpgp;
-//
-//const MESSAGE: &'static str = "дружба";
-//
-///// Generates an encryption-capable key.
-//fn generate() -> openpgp::Result<openpgp::TPK> {
-//    let (tpk, _revocation) = openpgp::tpk::TPKBuilder::new()
-//        .add_userid("someone@example.org")
-//        .add_encryption_subkey()
-//        .generate()?;
-//
-//    // Save the revocation certificate somewhere.
-//
-//    Ok(tpk)
-//}
-//
-//
-//
+use sequoia_openpgp as openpgp;
+use uuid::Uuid;
+
+/// Generates an encryption-capable key.
+pub fn generate(node_uuid: Uuid) -> openpgp::Result<(openpgp::TPK, openpgp::packet::Signature)> {
+    let (tpk, revocation) = openpgp::tpk::TPKBuilder::general_purpose(
+        openpgp::tpk::CipherSuite::RSA3k, Some(node_uuid.to_string()))
+        .generate()?;
+
+    Ok((tpk, revocation))
+}
+
+
+

@@ -10,16 +10,16 @@ pub struct Transaction<T: serde::Serialize + std::fmt::Debug + std::clone::Clone
     pub payload: T,
 }
 
-pub trait Transactional<T: serde::Serialize + std::fmt::Debug + std::clone::Clone>
-    where Self: std::marker::Sized {
-    fn new(sender: String, payload: T) -> Transaction<T> {
+pub trait Transactional
+    where Self: std::marker::Sized + serde::Serialize + std::fmt::Debug + std::clone::Clone {
+    fn new(sender: String, payload: Self) -> Transaction<Self> {
         Transaction {
             sender,
             payload
         }
     }
 
-    fn genesis(miner_address: String, reward: f32) -> Transaction<T>;
+    fn genesis(miner_address: String, reward: f32) -> Transaction<Self>;
 }
 
 // Examples: Crypto currency, Code, voting, timestamping of arbitary objects
@@ -41,7 +41,7 @@ pub struct CodePayload {
     pub commit_message: String,
 }
 
-impl Transactional<CryptoPayload> for CryptoPayload {
+impl Transactional for CryptoPayload {
     fn genesis(miner_address: String, reward: f32) -> Transaction<CryptoPayload> {
         Transaction {
             sender: String::from("Root"),
@@ -52,7 +52,7 @@ impl Transactional<CryptoPayload> for CryptoPayload {
         }
     }
 }
-impl Transactional<VotePayload> for VotePayload {
+impl Transactional for VotePayload {
     fn genesis(_miner_address: String, _reward: f32) -> Transaction<VotePayload> {
         Transaction {
             sender: String::from("Root"),
@@ -62,7 +62,7 @@ impl Transactional<VotePayload> for VotePayload {
         }
     }
 }
-impl Transactional<CodePayload> for CodePayload {
+impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: f32) -> Transaction<CodePayload>  {
         Transaction {
             sender: String::from("Root"),

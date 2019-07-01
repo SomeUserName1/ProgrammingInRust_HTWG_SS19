@@ -14,8 +14,6 @@ pub type Result<T> = result::Result<T, failure::Error>;
 /// This trait can be easily implemented for any specific storage
 /// backend solution (databases, volatile memory, flat files, etc.)
 pub trait Storage {
-    fn open(&self, address: String) -> Result<()>;
-
     /// Get a value from the storage give a key
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>>;
 

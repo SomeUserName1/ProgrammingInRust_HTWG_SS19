@@ -14,23 +14,38 @@ use tokio_core::net::{TcpStream, TcpListener};
 use tokio_timer::Timer;
 use tokio_core::reactor::Handle;
 
+use crate::crypto::key;
+use sequoia_openpgp as openpgp;
 // new tokio
 //use tokio::io;
 //use tokio::net::{TcpListener, TcpStream};
 
 use super::messages::Msg;
-use super::codec::MsgCodec;
+use super::codec_old::MsgCodec;
+use serde::export::PhantomData;
+use serde::{Serialize, Deserialize};
+use crate::blockchain::transaction::Transactional;
+use std::fmt::Debug;
 
 #[derive(Clone)]
-pub struct Node {
+pub struct Node
+{
     inner: Rc<RefCell<NodeInner>>,
     pub timer: Timer,
+
+
 }
+
+// TODO refactor for new tokio structure => no more handles, net and io, implement things more
+// tokio like and less sync
+
+// TODO On new block and transaction broadcast
+// TODO on bootstrap, get full chain
 
 impl Node {
     pub fn new(addr: SocketAddr) -> Node {
         let node = NodeInner {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4(), // TODO PK
             addr,
             peers: HashMap::new(),
             rng: Rc::new(RefCell::new(thread_rng())),
@@ -40,7 +55,7 @@ impl Node {
     }
 
     pub fn run<I: Iterator<Item=SocketAddr>>(&self, handle: Handle, addrs: I)
-                                             -> Box<dyn Future<Item=(), Error=io::Error>> {
+                                             -> Box<Future<Item=(), Error=io::Error>> {
         let inner = self.inner.clone();
 
         // start the server
@@ -69,7 +84,8 @@ impl Node {
     }
 
     fn start_client_actual(inner: Rc<RefCell<NodeInner>>, handle: Handle, addr: &SocketAddr)
-                           -> Box<dyn Future<Item=(), Error=io::Error>> {
+                           -> Box<Future<Item=(), Error=io::Error>> {
+
         println!("starting client {}", addr);
         let client = TcpStream::connect(&addr, &handle).and_then(move |socket| {
             println!("connected... local: {:?}, peer {:?}", socket.local_addr(), socket.peer_addr());
@@ -88,7 +104,9 @@ impl Node {
             // client sends ping on start
             let inner2 = inner.clone();
             let tx2 = tx.clone();
-            mpsc::UnboundedSender::send(&tx2, Msg::Ping((inner2.borrow().id, inner2.borrow().addr.clone())))
+            let (key, _) = key::generate(inner2.borrow().id).unwrap();
+            mpsc::UnboundedSender::unbounded_send(&tx2, Msg::Ping((inner2.borrow().id, inner2
+                .borrow().addr.clone())))
                 .expect("tx failed");
 
             // send everything in rx to sink
@@ -104,7 +122,10 @@ impl Node {
     }
 
     fn serve(inner: Rc<RefCell<NodeInner>>, handle: Handle)
-             -> Box<dyn Future<Item=(), Error=io::Error>> {
+             -> Box<Future<Item=(), Error=io::Error>> {
+
+        // TODO how to connect? bootstrap nodes!
+
         let socket = TcpListener::bind(&inner.borrow().addr, &handle).unwrap();
         println!("listening on {}", inner.borrow().addr);
 
@@ -133,8 +154,11 @@ impl Node {
         Box::new(srv)
     }
 
-    fn process(inner: Rc<RefCell<NodeInner>>, msg: Msg, tx: Tx, handle: Handle) -> Result<(), io::Error> {
+    fn process(inner: Rc<RefCell<NodeInner>>, msg: Msg, tx: Tx, handle: Handle) -> Result<
+        (),
+        io::Error> {
         match msg {
+            // TODO encrypt/decrypt
             Msg::Ping(m) => inner.borrow_mut().handle_ping(m, tx),
             Msg::Pong(m) => inner.borrow_mut().handle_pong(m, tx),
             Msg::Payload(m) => inner.borrow_mut().handle_payload(m, tx),
@@ -154,11 +178,7 @@ impl Node {
         self.inner.borrow().broadcast(m)
     }
 
-    pub fn send_random(&self, m: Msg) {
-        self.inner.borrow().send_random(m)
-    }
-
-    pub fn gossip_peers(&self, duration: Duration) -> Box<dyn Future<Item=(), Error=io::Error>> {
+    pub fn gossip_peers(&self, duration: Duration) -> Box<Future<Item=(), Error=io::Error>> {
         let inner = self.inner.clone();
         let f = self.timer.interval(duration).for_each(move |_| {
             let inner1 = inner.clone();
@@ -178,9 +198,9 @@ impl Node {
 type Tx = mpsc::UnboundedSender<Msg>;
 
 struct NodeInner {
-    pub id: Uuid,
+    pub id: Uuid, // TODO Public key
     pub addr: SocketAddr,
-    pub peers: HashMap<Uuid, (Tx, SocketAddr)>,
+    pub peers: HashMap<Uuid, (Tx, SocketAddr)>, // TODO public key
     rng: Rc<RefCell<ThreadRng>>,
 }
 
@@ -208,12 +228,13 @@ impl NodeInner {
         }
     }
 
-    fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx) -> Result<(), io::Error> {
+    fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx) -> Result<(),
+        io::Error> {
         println!("received ping: {:?}", m);
         match self.peers.get(&m.0) {
             Some(_) => {
                 println!("PING ALREADY EXIST! {:?}", m);
-                // TODO drop this connection
+                // TODO drop this connection;; FIXME why?!
                 Ok(())
             }
             None => {
@@ -231,7 +252,7 @@ impl NodeInner {
         match self.peers.get(&m.0) {
             Some(_) => {
                 println!("NODE ALREADY EXISTS {:?}", m);
-                // TODO drop this connection
+                // TODO drop this connection;; FIXME why?
             }
             None => {
                 println!("ADDING NODE! {:?}", m);

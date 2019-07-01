@@ -16,6 +16,9 @@ use blockchain::transaction::{CryptoPayload, Transactional};
 
 
 fn main() {
+
+    // TODO start node from here
+
     let mut miner_addr = String::new();
     let mut difficulty = String::new();
     let mut choice = String::new();

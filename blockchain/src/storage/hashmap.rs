@@ -8,10 +8,6 @@ use super::storage::{Result, Storage};
 pub type Backend = HashMap<Vec<u8>, Vec<u8>>;
 
 impl Storage for Backend {
-    fn open(&self, _address: String) -> Result<()> {
-        unimplemented!()
-    }
-
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
         Ok(Backend::get(self, key).map(|slice| slice.to_vec()))
     }

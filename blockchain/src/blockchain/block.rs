@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::blockchain::transaction::{Transaction, Transactional};
 use crate::crypto::merkle;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct BlockHeader {
     timestamp: i64,
     pub nonce: u32, 
@@ -16,14 +16,14 @@ pub struct BlockHeader {
 }
 
 
-#[derive(Serialize, Debug)]
-pub struct Block<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> {
+#[derive(Serialize, Debug, Clone)]
+pub struct Block<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> {
     pub header: BlockHeader,
     count: u32,
     transactions: Vec<Transaction<T>>
 }
 
-impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> Block<T> {
+impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> Block<T> {
     pub fn new(
         hash: String, 
         difficulty: u32, 

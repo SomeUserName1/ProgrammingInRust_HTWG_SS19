@@ -2,8 +2,11 @@
 use crate::crypto::hash;
 use super::block::{Block, BlockHeader};
 use super::transaction::{Transaction, Transactional};
+use serde::Serialize;
+use std::fmt::Debug;
 
-pub struct Chain<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> {
+#[derive(Clone, Serialize, Debug)]
+pub struct Chain<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> {
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
@@ -11,7 +14,7 @@ pub struct Chain<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Tra
     reward: f32,
 }
 
-impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional<T>> Chain<T>
+impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> Chain<T>
     where T: serde::Serialize + std::fmt::Debug {
     pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
         let mut chain = Chain {
