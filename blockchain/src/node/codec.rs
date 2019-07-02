@@ -1,27 +1,37 @@
-use tokio_core::io::EasyBuf;
-use tokio_core::io::Codec;
-use std::io;
-use serde_json;
 use std::str;
+use std::io;
+use std::marker::PhantomData;
 
-use super::messages::Msg;
+use bytes::{BytesMut, BufMut};
+use tokio::codec::{Encoder, Decoder};
+use serde::{Serialize, de::DeserializeOwned};
+use serde_json;
 
-pub struct MsgCodec; // json line
+use super::messages::Messages;
+use crate::blockchain::transaction::Transactional;
 
-impl Codec for MsgCodec {
-    type In = Msg;
-    type Out = Msg;
+pub struct MessagesCodec<T> {
+ next_index: usize,
+ phantom: PhantomData<T>,   
+} // json line
 
-    fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Self::In>> {
-        if let Some(i) = buf.as_slice().iter().position(|&b| b == b'\n') {
+impl<T> Decoder for MessagesCodec<T> 
+where T: DeserializeOwned + Transactional
+{
+    type Item = Messages<T>;
+    type Error = io::Error;
+
+    fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        if let Some(i) = buf.iter().position(|&b| b == b'\n') {
+            let newline_index = self.next_index + i;
             // remove the serialized frame from the buffer.
-            let line = buf.drain_to(i);
+            let line = buf.split_to(newline_index + 1);
 
-            // Also remove the '\n'
-            buf.drain_to(1);
+            let line = &line[..line.len() - 1];
+            
 
             // Turn this data into a UTF string
-            let s = str::from_utf8(line.as_slice())
+            let s = str::from_utf8(&line)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
             // Then turn it into json
@@ -33,13 +43,22 @@ impl Codec for MsgCodec {
         }
     }
 
-    fn encode(&mut self, msg: Msg, buf: &mut Vec<u8>)
-              -> io::Result<()>
+}
+
+impl<T> Encoder for MessagesCodec<T> 
+where T: Transactional + Serialize
+{
+    type Item = Messages<T>;
+    type Error = io::Error;
+
+    fn encode(&mut self, msg: Self::Item, buf: &mut BytesMut) -> io::Result<()>
     {
         let json_msg = serde_json::to_string(&msg)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
         buf.extend(json_msg.as_bytes());
-        buf.push(b'\n');
+        buf.put_u8(b'\n');
+
         Ok(())
     }
+
 }

@@ -1,12 +1,13 @@
-/// basic block data structure
 use std::borrow::BorrowMut;
+use std::fmt::Debug;
+use std::clone::Clone;
 
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use crate::blockchain::transaction::{Transaction, Transactional};
 use crate::crypto::merkle;
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockHeader {
     timestamp: i64,
     pub nonce: u32, 
@@ -16,14 +17,14 @@ pub struct BlockHeader {
 }
 
 
-#[derive(Serialize, Debug, Clone)]
-pub struct Block<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> {
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct Block<T> {
     pub header: BlockHeader,
     count: u32,
     transactions: Vec<Transaction<T>>
 }
 
-impl<T: serde::Serialize + std::fmt::Debug + std::clone::Clone + Transactional> Block<T> {
+impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + Transactional + PartialEq> Block<T> {
     pub fn new(
         hash: String, 
         difficulty: u32, 

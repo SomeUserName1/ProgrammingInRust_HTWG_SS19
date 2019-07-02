@@ -1,17 +1,19 @@
-extern crate serde;
-extern crate chrono;
+use std::marker::Sized;
+use std::clone::Clone;
+use std::fmt::Debug;
 
 use serde::{Serialize, Deserialize};
 
+
 /// one possible kind of transaction data structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Transaction<T: serde::Serialize + std::fmt::Debug + std::clone::Clone> {
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Transaction<T> {
     pub sender: String,
     pub payload: T,
 }
 
 pub trait Transactional
-    where Self: std::marker::Sized + serde::Serialize + std::fmt::Debug + std::clone::Clone {
+    where Self: Sized + Serialize + Debug + Clone {
     fn new(sender: String, payload: Self) -> Transaction<Self> {
         Transaction {
             sender,
@@ -23,18 +25,18 @@ pub trait Transactional
 }
 
 // Examples: Crypto currency, Code, voting, timestamping of arbitary objects
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CryptoPayload {
     pub receiver: String,
     pub amount: f32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VotePayload {
     pub vote: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CodePayload {
     pub file_name: String,
     pub contents: String,
