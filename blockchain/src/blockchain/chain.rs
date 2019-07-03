@@ -3,32 +3,33 @@ use std::fmt::Debug;
 use std::clone::Clone;
 use std::fmt::Write;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 use crate::crypto::hash;
 
 use super::block::{Block, BlockHeader};
 use super::transaction::{Transaction, Transactional};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Chain<T> {
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
     miner_addr: String,
-    reward: f32,
+    reward: u32,
 }
 
-impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transactional> Chain<T>
-    where T: serde::Serialize + std::fmt::Debug {
+impl<T:> Chain<T>
+    where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
+{
     pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
         let mut chain = Chain {
             chain: Vec::new(),
             curr_trans: Vec::new(),
             difficulty,
             miner_addr,
-            reward: 100.0,
-        };
+            reward: 100,
+         };
 
         chain.add_new_block();
         chain
@@ -53,7 +54,7 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transact
         true
     }
 
-    pub fn update_reward(&mut self, reward: f32) -> bool {
+    pub fn update_reward(&mut self, reward: u32) -> bool {
         self.reward = reward;
         true
     }
@@ -115,3 +116,16 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transact
         str
     }
 }
+
+impl<T> PartialEq for Chain<T>
+where T: Serialize + DeserializeOwned + Transactional + Clone + Transactional
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.chain.first().eq(&other.chain.first())
+    }
+}
+
+impl<T> Eq for Chain<T>
+where T: Transactional + DeserializeOwned
+{}
+

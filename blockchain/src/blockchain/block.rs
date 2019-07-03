@@ -3,13 +3,13 @@ use std::fmt::Debug;
 use std::clone::Clone;
 use std::fmt::Write;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 use crate::blockchain::transaction::{Transaction, Transactional};
 use crate::crypto::merkle;
 
 /// A header of a block in the blockchain
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BlockHeader {
     /// The creation timestamp of the block.
     timestamp: i64,
@@ -35,6 +35,13 @@ pub struct BlockHeader {
     pub difficulty: u32,
 }
 
+impl PartialEq for BlockHeader {
+    fn eq(&self, other: &Self) -> bool {
+        self.timestamp.eq(&other.timestamp) && self.pre_hash.eq(&other.pre_hash)
+            && self.merkle.eq(&other.merkle)
+    }
+}
+
 impl BlockHeader {
     /// Used to format the header of a block.
     pub fn fmt(&self) -> String {
@@ -52,8 +59,11 @@ impl BlockHeader {
     }
 }
 
-/// A block of the blockchain
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+impl Eq for BlockHeader {}
+
+/// A block of the blockchain
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block<T> {
     /// The header informations in the current block.
     pub header: BlockHeader,
@@ -63,17 +73,28 @@ pub struct Block<T> {
     transactions: Vec<Transaction<T>>,
 }
 
-impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + Transactional + PartialEq> Block<T> {
-    /// Creates a new block.
-    pub fn new(hash: String, difficulty: u32, miner_address: String, reward: f32,
-               transactions: &mut Vec<Transaction<T>>) -> Self {
+impl<T> PartialEq for Block<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.header.eq(&other.header)
+    }
+}
 
+impl<T> Eq for Block<T> {}
+
+impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
+    pub fn new(
+        hash: String,
+        difficulty: u32,
+        miner_address: String,
+        reward: u32,
+        transactions: &mut Vec<Transaction<T>>
+                                        ) -> Self {
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
             pre_hash: hash,
             merkle: String::new(),
-            difficulty,
+            difficulty
         };
 
         let reward_trans = T::genesis(miner_address, reward);
@@ -81,7 +102,7 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + Transactional + Part
         let mut block = Block {
             header,
             count: 0,
-            transactions: vec![],
+            transactions: vec![]
         };
 
         block.transactions.push(reward_trans);

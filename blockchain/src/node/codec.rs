@@ -15,6 +15,15 @@ pub struct MessagesCodec<T> {
  phantom: PhantomData<T>,   
 } // json line
 
+impl<T> MessagesCodec<T>{
+    pub fn new() -> Self {
+        MessagesCodec {
+            next_index: 0,
+            phantom: PhantomData
+        }
+    }
+}
+
 impl<T> Decoder for MessagesCodec<T> 
 where T: DeserializeOwned + Transactional
 {
