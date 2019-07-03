@@ -5,7 +5,7 @@ mod blockchain;
 mod crypto;
 mod node;
 mod storage;
-
+mod cli;
 
 use std::io;
 use std::process;
