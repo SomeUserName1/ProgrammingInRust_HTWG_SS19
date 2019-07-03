@@ -2,12 +2,12 @@ use std::borrow::BorrowMut;
 use std::fmt::Debug;
 use std::clone::Clone;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 use crate::blockchain::transaction::{Transaction, Transactional};
 use crate::crypto::merkle;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BlockHeader {
     timestamp: i64,
     pub nonce: u32, 
@@ -16,20 +16,36 @@ pub struct BlockHeader {
     pub difficulty: u32,
 }
 
+impl PartialEq for BlockHeader {
+    fn eq(&self, other: &Self) -> bool {
+        self.timestamp.eq(&other.timestamp) && self.pre_hash.eq(&other.pre_hash)
+            && self.merkle.eq(&other.merkle)
+    }
+}
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+impl Eq for BlockHeader {}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block<T> {
     pub header: BlockHeader,
     count: u32,
     transactions: Vec<Transaction<T>>
 }
 
-impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + Transactional + PartialEq> Block<T> {
+impl<T> PartialEq for Block<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.header.eq(&other.header)
+    }
+}
+
+impl<T> Eq for Block<T> {}
+
+impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
     pub fn new(
         hash: String, 
         difficulty: u32, 
         miner_address: String,
-        reward: f32,
+        reward: u32,
         transactions: &mut Vec<Transaction<T>>
                                         ) -> Self {
         let header = BlockHeader {

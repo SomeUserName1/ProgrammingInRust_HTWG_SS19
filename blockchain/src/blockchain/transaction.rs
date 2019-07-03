@@ -2,18 +2,18 @@ use std::marker::Sized;
 use std::clone::Clone;
 use std::fmt::Debug;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 
 /// one possible kind of transaction data structure
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Transaction<T> {
     pub sender: String,
     pub payload: T,
 }
 
 pub trait Transactional
-    where Self: Sized + Serialize + Debug + Clone {
+    where Self: Sized + Send + Serialize + DeserializeOwned+ PartialEq + Eq + Debug + Clone {
     fn new(sender: String, payload: Self) -> Transaction<Self> {
         Transaction {
             sender,
@@ -21,22 +21,22 @@ pub trait Transactional
         }
     }
 
-    fn genesis(miner_address: String, reward: f32) -> Transaction<Self>;
+    fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
 }
 
 // Examples: Crypto currency, Code, voting, timestamping of arbitary objects
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CryptoPayload {
     pub receiver: String,
-    pub amount: f32,
+    pub amount: u32,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct VotePayload {
     pub vote: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CodePayload {
     pub file_name: String,
     pub contents: String,
@@ -44,7 +44,7 @@ pub struct CodePayload {
 }
 
 impl Transactional for CryptoPayload {
-    fn genesis(miner_address: String, reward: f32) -> Transaction<CryptoPayload> {
+    fn genesis(miner_address: String, reward: u32) -> Transaction<CryptoPayload> {
         Transaction {
             sender: String::from("Root"),
             payload: CryptoPayload {
@@ -55,7 +55,7 @@ impl Transactional for CryptoPayload {
     }
 }
 impl Transactional for VotePayload {
-    fn genesis(_miner_address: String, _reward: f32) -> Transaction<VotePayload> {
+    fn genesis(_miner_address: String, _reward: u32) -> Transaction<VotePayload> {
         Transaction {
             sender: String::from("Root"),
             payload: VotePayload {
@@ -65,7 +65,7 @@ impl Transactional for VotePayload {
     }
 }
 impl Transactional for CodePayload {
-    fn genesis(_miner_address: String, _reward: f32) -> Transaction<CodePayload>  {
+    fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload>  {
         Transaction {
             sender: String::from("Root"),
             payload: CodePayload {
