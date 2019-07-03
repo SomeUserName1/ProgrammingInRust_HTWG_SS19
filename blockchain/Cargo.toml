@@ -2,7 +2,7 @@
 name = "blockchain-rs"
 version = "0.1.0"
 edition = "2018"
-authors = ["Chuggi, Chuggo, Chuggu"]
+authors = ["Fabian Klopfer, Felix Mayer, Stephan Perren"]
 publish = false
 repository = "SomeUserName1/pir-ss19-homeworks-grp14"
 readme = "README.md"
