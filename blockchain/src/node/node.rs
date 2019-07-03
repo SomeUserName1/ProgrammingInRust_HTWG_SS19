@@ -20,7 +20,7 @@ use super::codec::MessagesCodec;
 
 use crate::blockchain::chain::Chain;
 use crate::blockchain::transaction::{Transaction, Transactional};
-use crate::crypto::key;
+use crate::crypto::pgp;
 
 type Tx<T> = mpsc::UnboundedSender<Messages<T>>;
 
@@ -38,7 +38,7 @@ where T: Transactional
 {
     fn new(addr: SocketAddr) -> Node<T> {
         let id = Uuid::new_v4();
-        let (keys, _) = key::generate(id).expect("Failed to generate keys!");
+        let (keys, _) = pgp::generate(id).expect("Failed to generate keys!");
         Node {
             id,
             keys,

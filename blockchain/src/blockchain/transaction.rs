@@ -10,11 +10,12 @@ use serde::{Serialize, Deserialize, de::DeserializeOwned};
 pub struct Transaction<T> {
     pub sender: String,
     pub payload: T,
+    pub signature: &'static [u8],
 }
 
 pub trait Transactional
     where Self: Sized + Send + Serialize + DeserializeOwned+ PartialEq + Eq + Debug + Clone {
-    fn new(sender: String, payload: Self) -> Transaction<Self> {
+    fn new(sender: String, payload: Self, key: sequoia_openpgp::TPK) -> Transaction<Self> {
         Transaction {
             sender,
             payload
