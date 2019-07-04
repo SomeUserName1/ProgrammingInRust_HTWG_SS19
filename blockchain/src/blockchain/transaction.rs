@@ -9,14 +9,21 @@ use serde::{Serialize, Deserialize, de::DeserializeOwned};
 /// The transaction stored in a block of the blockchain.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Transaction<T> {
-     /// The sender of the transaction.
-     pub sender: String,
-     /// The payload of the transaction.
-     pub payload: T,
+    /// The sender of the transaction.
+    pub sender: String,
+    /// The payload of the transaction.
+    pub payload: T,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Payload {
+    Crypto,
+    Vote,
+    Code
 }
 
 impl<T> Transaction<T> {
-/// Used to format a transaction of a block.
+    /// Used to format a transaction of a block.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
 
@@ -29,16 +36,16 @@ impl<T> Transaction<T> {
 }
 
 pub trait Transactional
-where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
-/// Creates a new transaction with a sender and the specified payload.
+    where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
+    /// Creates a new transaction with a sender and the specified payload.
     fn new(sender: String, payload: Self) -> Transaction<Self> { // , key:
-	Transaction {
-              sender,
-              payload,
-	 }
-     }
+        Transaction {
+            sender,
+            payload,
+        }
+    }
 
-     fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
+    fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
 }
 
 

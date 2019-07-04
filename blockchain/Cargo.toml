@@ -25,6 +25,7 @@ getopts = "0.2"
 
 # Crypto
 sequoia-openpgp = "0.8" # see bottom note
+rpassword = "3.0.2"
 sha3 = "0.8.2"
 
 # P2P
