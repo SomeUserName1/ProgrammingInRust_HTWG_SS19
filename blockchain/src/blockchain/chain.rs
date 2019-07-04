@@ -90,10 +90,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
             miner_addr, self.reward, &mut self.curr_trans);
 
 
-        match Chain::<T>::proof_of_work(&mut block.header) {
-            Ok(()) => {},
-            Err(_) => return false,
-        };
+        Chain::<T>::proof_of_work(&mut block.header);
         println!("{}", &block.fmt());
         self.chain.push(block);
         true
