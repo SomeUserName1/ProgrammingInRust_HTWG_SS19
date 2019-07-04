@@ -36,12 +36,13 @@ fn main() {
         println!("2) Mine block");
         println!("3) Change Difficulty");
         println!("4) Change Reward");
+        println!("5) Print Blockchain");
         println!("0) Exit");
         print!("Enter your choice: ");
         io::stdout().flush().expect("IO Error");
         choice.clear();
         io::stdin().read_line(&mut choice).expect("IO Error");
-        println!("");
+        println!();
 
         match choice.trim().parse().unwrap() {
             0 =>
@@ -109,6 +110,9 @@ fn main() {
                     true => println!("Updated reward"),
                     false => println!("Failed Update reward"),
                 }
+            }
+            5 => {
+                println!("{}", chain.fmt());
             }
             _ => println!("Invalid option please retry"),
         }

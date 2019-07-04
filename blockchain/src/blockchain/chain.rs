@@ -1,8 +1,8 @@
 /// data structure to maintain the chain
-use std::fmt::Debug;
+use std::fmt::{Debug, Write};
 use std::clone::Clone;
 
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 use crate::crypto::hash;
 
@@ -15,10 +15,10 @@ pub struct Chain<T> {
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
     miner_addr: String, 
-    reward: f32,
+    reward: u32,
 }
 
-impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transactional> Chain<T>
+impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional> Chain<T>
     where T: serde::Serialize + std::fmt::Debug {
     pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
         let mut chain = Chain {
@@ -26,7 +26,7 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transact
             curr_trans: Vec::new(),
             difficulty,
             miner_addr,
-            reward: 100.0,
+            reward: 100,
          };
 
         chain.add_new_block();
@@ -53,7 +53,7 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transact
         true
     }
 
-    pub fn update_reward(&mut self, reward: f32) -> bool {
+    pub fn update_reward(&mut self, reward: u32) -> bool {
         self.reward = reward;
         true
     }
@@ -91,4 +91,28 @@ impl<'de, T: Serialize + Deserialize<'de> + Debug + Clone + PartialEq + Transact
             };
         }
     }
+
+
+    pub fn fmt(&self) -> String {
+        let mut str = String::new();
+
+        write!(&mut str, "Chain [\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        for block in &self.chain {
+            write!(&mut str, "{}", block.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
+        }
+
+        write!(&mut str, "    Current Transactions: [\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        for trans in &self.curr_trans {
+            write!(&mut str, "{}", trans.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
+        }
+
+        write!(&mut str, "    ]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "    Difficulty:    {}\n", &self.difficulty).expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "    Miner address: {}\n", &self.miner_addr).expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        str
+}
 }
