@@ -115,3 +115,21 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
         str
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::blockchain::chain::Chain;
+    use crate::blockchain::transaction::CryptoPayload;
+
+    #[test]
+    fn create_crpyto_block_chain() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let chain = Chain::<CryptoPayload>::new(miner_addr, difficulty);
+
+        assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.curr_trans.len(), 0);
+        assert_eq!(chain.reward, 100);
+    }
+}
