@@ -55,6 +55,7 @@ fn main() {
     }
 }
 
+/// Prints the available commands.
 fn print_help_text() {
     println!("\nFollowing commands are available:\n");
     println!("new transaction   --------------- Creates a new transaction.");
@@ -65,6 +66,7 @@ fn print_help_text() {
     println!("exit              --------------- Exits the programm.\n")
 }
 
+/// Reads the input from a user and returns it.
 fn read_user_input() -> String {
     let mut user_input = String::new();
 
@@ -78,6 +80,7 @@ fn read_user_input() -> String {
     }
 }
 
+/// Adds a new transaction to the blockchain.
 fn new_transaction(chain: &mut Chain<CryptoPayload>) {
     print!("Please enter the sender address:");
     let sender = read_user_input();
@@ -100,6 +103,7 @@ fn new_transaction(chain: &mut Chain<CryptoPayload>) {
     }
 }
 
+/// Adds a new block to the blockchain
 fn mine_block(chain: &mut Chain<CryptoPayload>) {
     println!("Generating block...");
     match chain.add_new_block() {
@@ -108,6 +112,7 @@ fn mine_block(chain: &mut Chain<CryptoPayload>) {
     }
 }
 
+/// Changes the difficulty to mine a new block.
 fn change_difficulty(chain: &mut Chain<CryptoPayload>) {
     let mut new_difficulty: u32;
 
@@ -133,6 +138,7 @@ fn change_difficulty(chain: &mut Chain<CryptoPayload>) {
     }
 }
 
+/// Updates the reward a miner gets, when a new block is mined.
 fn update_reward(chain: &mut Chain<CryptoPayload>) {
     let mut new_reward: u32;
 
