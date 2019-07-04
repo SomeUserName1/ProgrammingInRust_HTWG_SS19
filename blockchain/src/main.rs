@@ -1,26 +1,21 @@
-//! A distributed generic blockchain written in rust.
-
-
-/// The core datastrutures to provide a blockchain
+/// Start a node and provide a cli to it
+///
+/// TODO unify with all other modules
 mod blockchain;
-/// Provides functionalities to create gpg keys and signature/verify or encrpyt/decrypt transactions.
 mod crypto;
-/// Provides a peer to peer network to distribute the blockchain
-mod node;
-/// Provides functionalities to store a blockchain in a database
-mod storage;
-// mod cli;
 
 use std::io;
+use std::process;
 use std::io::Write;
-use std::process::exit;
 
 use blockchain::chain;
 use blockchain::transaction::{CryptoPayload, Transactional};
 
+
 fn main() {
 
     // TODO start node from here
+
     let mut miner_addr = String::new();
     let mut difficulty = String::new();
     let mut choice = String::new();
@@ -41,7 +36,6 @@ fn main() {
         println!("2) Mine block");
         println!("3) Change Difficulty");
         println!("4) Change Reward");
-        println!("5) Print Blockchain");
         println!("0) Exit");
         print!("Enter your choice: ");
         io::stdout().flush().expect("IO Error");
@@ -53,8 +47,8 @@ fn main() {
             0 =>
                 {
                     println!("exiting!");
-                    exit(0);
-                }
+                    process::exit(0);
+                },
             1 => {
                 let mut sender = String::new();
                 let mut receiver = String::new();
@@ -83,7 +77,7 @@ fn main() {
                     true => println!("transaction added"),
                     false => println!("transaction failed"),
                 }
-            }
+            },
             2 =>
                 {
                     println!("Generating block");
@@ -92,7 +86,7 @@ fn main() {
                         true => println!("Block generated successfully"),
                         false => println!("Block generation failed"),
                     }
-                }
+                },
             3 =>
                 {
                     let mut new_diff = String::new();
@@ -104,8 +98,8 @@ fn main() {
                         true => println!("Updated Difficulty"),
                         false => println!("Failed Update Difficulty"),
                     }
-                }
-            4 => {
+                },
+            4 =>{
                 let mut new_reward = String::new();
                 print!("Enter new reward: ");
                 io::stdout().flush().expect("IO Error");
@@ -116,10 +110,8 @@ fn main() {
                     false => println!("Failed Update reward"),
                 }
             }
-            5 => {
-                println!("{}", chain.fmt());
-            }
             _ => println!("Invalid option please retry"),
         }
+
     }
 }
