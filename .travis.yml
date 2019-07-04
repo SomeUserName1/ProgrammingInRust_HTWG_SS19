@@ -1,4 +1,7 @@
 language: rust
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y git rustc cargo clang make pkg-config nettle-dev libssl-dev capnproto libsqlite3-dev
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
