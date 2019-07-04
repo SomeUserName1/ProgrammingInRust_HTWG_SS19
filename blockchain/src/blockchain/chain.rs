@@ -1,4 +1,4 @@
-/// data structure to maintain the chain
+
 use std::fmt::{Debug, Write};
 use std::clone::Clone;
 
@@ -9,6 +9,7 @@ use crate::crypto::hash;
 use super::block::{Block, BlockHeader};
 use super::transaction::{Transaction, Transactional};
 
+/// data structure to maintain the chain
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Chain<T> {
     chain: Vec<Block<T>>,

@@ -1,3 +1,17 @@
+//! # Overview
+//!
+//! A locally stored blockchain written in Rust
+//!
+//! Following commands are available:
+//!
+//! - ```new transaction``` to create a new transaction and add it to the blockchain.
+//! - ```mine block``` to mine a new block and add it to the blockchain.
+//! - ```update difficulty``` to update the difficulty to mine a new block.
+//! - ```update reward``` to update the reward a miner gets, when a new block is mined.
+//! - ```print``` prints the blockchain.
+//! - ```help``` prints the available commands.
+//! - ```exit``` exits the programm.
+
 /// The core datastructures to create a blockchain
 mod blockchain;
 mod crypto;
