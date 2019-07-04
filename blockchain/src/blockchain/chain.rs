@@ -90,7 +90,10 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
             miner_addr, self.reward, &mut self.curr_trans);
 
 
-        Chain::<T>::proof_of_work(&mut block.header);
+        match Chain::<T>::proof_of_work(&mut block.header) {
+            Ok(()) => {},
+            Err(_) => return false,
+        };
         println!("{}", &block.fmt());
         self.chain.push(block);
         true
@@ -99,7 +102,6 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
     /// Primary function for our proof of work consensus mechanism. Wraps around `async_search`
     /// and waits for a solution.
     pub fn proof_of_work(header: &mut BlockHeader) -> Result<(), RecvError> {
-        let difficulty = header.difficulty;
         match async_search(header.clone()) {
             Ok(sol) => {
                 header.nonce = sol.0 as u32;

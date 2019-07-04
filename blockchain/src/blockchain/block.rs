@@ -86,7 +86,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
     pub fn new(hash: String, difficulty: u32, miner_address: String, reward: u32,
                transactions: &mut Vec<Transaction<T>>,
     ) -> Self {
-        /// Produces a block with nonce 0, to be changed later after mining.
+        // Produces a block with nonce 0, to be changed later after mining.
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
@@ -95,7 +95,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
             difficulty,
         };
 
-        /// Creates an initial transaction for the block.
+        // Creates an initial transaction for the block.
         let reward_trans = T::genesis(miner_address, reward);
 
         let mut block = Block {
