@@ -28,7 +28,7 @@ fn main() {
     io::stdin().read_line(&mut difficulty).expect("IO Error");
     let diff = difficulty.trim().parse::<u32>().expect("we need an integer");
     println!("generating genesis block! ");
-    let mut chain = chain::Chain::<CryptoPayload>::new(miner_addr.trim().to_string(), diff);
+    let mut chain = chain::Chain::<CryptoPayload>::new( diff, "root".to_string());
 
     loop {
         println!("Menu");
@@ -81,8 +81,12 @@ fn main() {
             },
             2 =>
                 {
+                    let mut sender = String::new();
+                    print!("enter sender address:");
+                    io::stdout().flush().expect("IO Error");
+                    io::stdin().read_line(&mut sender).expect("IO Error");
                     println!("Generating block");
-                    let res = chain.add_new_block();
+                    let res = chain.add_new_block(sender);
                     match res {
                         true => println!("Block generated successfully"),
                         false => println!("Block generation failed"),

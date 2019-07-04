@@ -1,3 +1,6 @@
+//! OpenPGP implementations. Can be used to generate, sign, verify, encrypt, decrypt, import
+//! and export PGP keys. Not used since there is no networking.
+
 use crate::blockchain::transaction::Transactional;
 use std::collections::HashMap;
 use std::io::{self, Write, Read};

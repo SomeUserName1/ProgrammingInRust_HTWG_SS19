@@ -24,8 +24,7 @@ pub struct BlockHeader {
 
     /// The merkle tree of a block.
     ///
-    /// A Merkle tree summarizes all the transactions in a block by producing a digital fingerprint
-    /// of the entire set of transactions, thereby enabling a user to verify whether or not a transaction is included in a bloc
+    /// See the doc of merkle.rs for more information.
     merkle: String,
 
     /// The difficulty to mine a new block.
@@ -35,12 +34,15 @@ pub struct BlockHeader {
     pub difficulty: u32,
 }
 
+/// We want to be able to compare block headers.
 impl PartialEq for BlockHeader {
     fn eq(&self, other: &Self) -> bool {
         self.timestamp.eq(&other.timestamp) && self.pre_hash.eq(&other.pre_hash)
             && self.merkle.eq(&other.merkle)
     }
 }
+
+impl Eq for BlockHeader {}
 
 impl BlockHeader {
     /// Used to format the header of a block.
@@ -59,8 +61,6 @@ impl BlockHeader {
     }
 }
 
-impl Eq for BlockHeader {}
-
 /// A block of the blockchain
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block<T> {
@@ -72,6 +72,7 @@ pub struct Block<T> {
     transactions: Vec<Transaction<T>>,
 }
 
+/// We want to be able to compare blocks. A delegation to comparing the headers is sufficient.
 impl<T> PartialEq for Block<T> {
     fn eq(&self, other: &Self) -> bool {
         self.header.eq(&other.header)
@@ -81,27 +82,30 @@ impl<T> PartialEq for Block<T> {
 impl<T> Eq for Block<T> {}
 
 impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
+    /// Creates a new block. Should be called through Chain to prevent inconsistencies.
     pub fn new(
         hash: String,
         difficulty: u32,
         miner_address: String,
         reward: u32,
-        transactions: &mut Vec<Transaction<T>>
-                                        ) -> Self {
+        transactions: &mut Vec<Transaction<T>>,
+    ) -> Self {
+        /// Produces a block with nonce 0, to be changed later after mining.
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
             pre_hash: hash,
             merkle: String::new(),
-            difficulty
+            difficulty,
         };
 
+        /// Creates an initial transaction for the block.
         let reward_trans = T::genesis(miner_address, reward);
 
         let mut block = Block {
             header,
             count: 0,
-            transactions: vec![]
+            transactions: vec![],
         };
 
         block.transactions.push(reward_trans);

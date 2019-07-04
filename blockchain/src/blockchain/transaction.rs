@@ -101,7 +101,7 @@ impl Transactional for VotePayload {
     }
 }
 
-/// Creates an initial commit.
+/// Creates an initial commit ala git.
 impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload> {
         Transaction {

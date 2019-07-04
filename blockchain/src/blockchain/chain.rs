@@ -1,4 +1,6 @@
-//! Data structure to maintain the chain.
+//! The blockchain data structure. Contains functions for mining for new blocks.
+//! A chain can hold different types of transactions, the the transaction documentation
+//! for more information.
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16,8 +18,12 @@ use std::sync::{Arc, mpsc};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
+/// Number of threads to create for mining. 4 cores are almost always present.
 const NTHREADS: usize = 4;
 
+/// A solution struct for mining for new blocks.
+/// Will be send from worker threads to the waiting main thread.
+/// String is the hash (can be used, but not necessary).
 #[derive(Debug)]
 struct Solution(usize, String);
 
@@ -30,23 +36,21 @@ pub struct Chain<T> {
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
-    miner_addr: String,
     reward: u32,
 }
 
 impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional> Chain<T>
     where T: serde::Serialize + std::fmt::Debug {
     /// Create a new chain. Difficulty can be chosen by the creator.
-    pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
+    pub fn new(difficulty: u32, miner: String) -> Chain<T> {
         let mut chain = Chain {
             chain: Vec::new(),
             curr_trans: Vec::new(),
             difficulty,
-            miner_addr,
             reward: 100,
         };
 
-        chain.add_new_block();
+        chain.add_new_block(miner);
         chain
     }
 
@@ -78,13 +82,13 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
         true
     }
 
-    /// Creates a new block. All necessary information is taken from the chain. That is the previous
-    /// blocks hash, difficulty, the miners address, the reward and all current transactions.
+    /// Creates a new block. All necessary information is taken from the chain, besides the miners adress.
+    /// That is the previous blocks hash, difficulty, the reward and all current transactions.
     /// Uses proof of work to mine, so depending on the difficulty it will take a while.
-    pub fn add_new_block(&mut self) -> bool {
+    pub fn add_new_block(&mut self, miner_addr: String) -> bool {
         let mut block = Block::<T>::new(
             self.last_hash(), self.difficulty,
-            self.miner_addr.clone(), self.reward, &mut self.curr_trans);
+            miner_addr, self.reward, &mut self.curr_trans);
 
 
         Chain::<T>::proof_of_work(&mut block.header);
@@ -125,7 +129,6 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
 
         write!(&mut str, "    ]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
         write!(&mut str, "    Difficulty:    {}\n", &self.difficulty).expect("[Chain fmt()]: Unable to write in Buffer!");
-        write!(&mut str, "    Miner address: {}\n", &self.miner_addr).expect("[Chain fmt()]: Unable to write in Buffer!");
         write!(&mut str, "]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
 
         str
