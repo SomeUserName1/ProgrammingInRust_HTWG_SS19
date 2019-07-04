@@ -24,8 +24,6 @@ time = "0.1"
 getopts = "0.2"
 
 # Crypto
-sequoia-openpgp = "0.8" # see bottom note
-rpassword = "3.0.2"
 sha3 = "0.8.2"
 
 # P2P
@@ -39,14 +37,3 @@ uuid = { version = "0.7", features = ["serde", "v4"] }
 
 # Storage
 rocksdb = "0.10"
-
-
-#### deps for sequoia-openpgp:
-# apt install git rustc cargo clang make pkg-config nettle-dev libssl-dev
-# capnproto libsqlite3-dev
-
-# if error:
-# failed to run custom build command for `nettle-sys v1.0.0
-# then => https://github.com/jedahan/chattervan/issues/1
-# may need to set ld library path for libnettle.so.7
-
