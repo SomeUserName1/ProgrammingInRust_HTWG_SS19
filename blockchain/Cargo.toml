@@ -38,7 +38,6 @@ uuid = { version = "0.7", features = ["serde", "v4"] }
 
 # Storage
 rocksdb = "0.10"
-redis = "0.10.0"
 
 
 #### deps for sequoia-openpgp:

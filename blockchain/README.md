@@ -1,4 +1,12 @@
 # PIR Blockchain
+## Participants:
+Difficult topic, let's skip that. Asume the process of writing this was a closure so it's anonymous and the lifetime ends on submission.  
+
+## Description: 
+Our goal was to provide a asynchronous-networking-cabaple decentralized blockchain, that is able to be set up with different (generic) Transaction payloads, which would have been signed with pgp and the traffic would have been encrypted by pgp. The keys as well as peer tables and the elder blocks should have been stored persistently to reduce the ram usage.  
+Due to a lack of time, resources (as with the participants let's not dive into this) and clear planable deadline anouncements, the asynchronous peer to peer server is still WIP as well as signing, encryption and storage, see the dev branch for those efforts.  
+Also as we announced we couldn't estimate the amount of work and as the Insights page shows it were quite some days and nights that were spent on this project.
+
 ## Blochain
 - [x] chain: data structure, transactions consensus mechanisms/block mining
 - [x] block: central data structure: stores transactions in a merkle tree 
@@ -24,3 +32,45 @@ tables) persistently)
 - [ ] Optional working rocksdb backend
 - [ ] Optional proper schemas for PGP keys, peer tables, blocks
 
+## Things not considered
+- A Wallet for managing and reestablishing possibly differen accounts on a node  
+- scalability & security  
+- channel based networking as in the lightning protocol used by bitcoin
+- proper routing to not spawn a channel for each client in the network as in the modified kademila protocol used by Ethereum 2.0  
+- Further Consensus mechanisms
+
+## Dependencies
+```
+serde = { version = "1.0.94", features = ["derive"]}
+serde_json = "1.0.39"
+serde_derive = "1.0.94"
+```  
+Derivable serialization traits used for messages and structs to be used in networking.  
+```
+bytes = "0.4"
+time = "0.1"
+getopts = "0.2"
+failure = "0.1.5"
+```  
+Used in error handling, timing, reading and writing to buffers (networking codec) and parsing cli arguments.  
+```
+sequoia-openpgp = "0.8" # see bottom note
+sha3 = "0.8.2"
+```
+Obviously used for the crypto module for hashing, the merkle tree, signing and encryption.  
+
+```
+tokio = "0.1"
+tokio-io = "0.1.12"
+tokio-codec = "0.1.1"
+tokio-core = "0.1"
+futures = "0.1"
+tokio-timer = "0.1"
+uuid = { version = "0.7", features = ["serde", "v4"] }
+```  
+Used to write the p2p server so that it doesnt block the node e.g. when mining (no messages are receivable anymore when doing it synchronously).  
+
+```
+rocksdb = "0.10"
+```
+Database for persistent storage of peer tables, pgp keys and blockchain data structures when not mining.  
