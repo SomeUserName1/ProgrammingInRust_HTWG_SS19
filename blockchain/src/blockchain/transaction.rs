@@ -1,10 +1,15 @@
+//! The transactions of our chain. A transaction consists of a sender
+//! and the payload. Depending on the type of blockchain, different
+//! payloads can be chosen, such as: CryptoPayload (ala cryptocurrency
+//! containing a value), VotePayload (containing the choice) and CodePayload
+//! (like git, a file name, file content and a message).
+
 use std::marker::Sized;
 use std::clone::Clone;
 use std::fmt::Debug;
 use std::fmt::Write;
 
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
-
 
 /// The transaction stored in a block of the blockchain.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -17,7 +22,7 @@ pub struct Transaction<T> {
 
 impl<T> Transaction<T>
     where T: std::fmt::Debug {
-    /// Used to format a transaction of a block.
+    /// Formats a transaction with all information.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
 
@@ -42,6 +47,7 @@ pub trait Transactional
         }
     }
 
+    /// For each type of transaction, we need to be able to initialize the chain.
     fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
 }
 
@@ -74,6 +80,7 @@ pub struct CodePayload {
     pub commit_message: String,
 }
 
+/// Creates a classic genesis block for cryptocurrency blockchains.
 impl Transactional for CryptoPayload {
     fn genesis(miner_address: String, reward: u32) -> Transaction<CryptoPayload> {
         Transaction {
@@ -86,6 +93,7 @@ impl Transactional for CryptoPayload {
     }
 }
 
+/// Creates a "root" vote.
 impl Transactional for VotePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<VotePayload> {
         Transaction {
@@ -97,6 +105,7 @@ impl Transactional for VotePayload {
     }
 }
 
+/// Creates an initial commit ala git.
 impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload> {
         Transaction {

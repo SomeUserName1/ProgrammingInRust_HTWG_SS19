@@ -47,7 +47,7 @@ fn main() {
 
     println!("Generating genesis block...");
     let mut chain = Chain::<CryptoPayload>::new(
-        miner_addr.trim().to_string(), difficulty);
+        difficulty, miner_addr.trim().to_string());
 
     loop {
         print!("Please enter a command:");
@@ -57,7 +57,7 @@ fn main() {
             "new transaction" => new_transaction(&mut chain),
             "help" => print_help_text(),
             "print" => println!("{}", chain.fmt()),
-            "mine block" => mine_block(&mut chain),
+            "mine block" => mine_block(&mut chain, miner_addr.clone()),
             "update difficulty" => change_difficulty(&mut chain),
             "update reward" => update_reward(&mut chain),
             "exit" => {
@@ -118,9 +118,9 @@ fn new_transaction(chain: &mut Chain<CryptoPayload>) {
 }
 
 /// Adds a new block to the blockchain
-fn mine_block(chain: &mut Chain<CryptoPayload>) {
+fn mine_block(chain: &mut Chain<CryptoPayload>, miner: String) {
     println!("Generating block...");
-    match chain.add_new_block() {
+    match chain.add_new_block(miner) {
         true => println!("Block was generated successfully."),
         false => println!("Block generation failed!"),
     }
