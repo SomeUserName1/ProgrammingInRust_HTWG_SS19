@@ -125,3 +125,85 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
         str
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::blockchain::block::{BlockHeader, Block};
+    use crate::blockchain::transaction::{CryptoPayload, Transactional};
+
+    #[test]
+    fn block_header_eq() {
+        let block_header_1 = BlockHeader {
+            timestamp: 0,
+            pre_hash: String::from("00xxxxxxxxxxxxxxxxxx"),
+            nonce: 24,
+            merkle: String::from("xxxxxxxxxxxxxxxxxxxx"),
+            difficulty: 2,
+        };
+
+        let block_header_2 = BlockHeader {
+            timestamp: 1,
+            pre_hash: String::from("00yyyyyyyyyyyyyyyyyy"),
+            nonce: 42,
+            merkle: String::from("yyyyyyyyyyyyyyyyyyyy"),
+            difficulty: 2,
+        };
+
+        assert_eq!(block_header_1.eq(&block_header_2), false);
+        assert_eq!(block_header_1.eq(&block_header_1), true);
+    }
+
+    #[test]
+    fn block_eq() {
+        let block_header_1 = BlockHeader {
+            timestamp: 0,
+            pre_hash: String::from("00xxxxxxxxxxxxxxxxxx"),
+            nonce: 24,
+            merkle: String::from("xxxxxxxxxxxxxxxxxxxx"),
+            difficulty: 2,
+        };
+
+        let block_header_2 = BlockHeader {
+            timestamp: 1,
+            pre_hash: String::from("00yyyyyyyyyyyyyyyyyy"),
+            nonce: 42,
+            merkle: String::from("yyyyyyyyyyyyyyyyyyyy"),
+            difficulty: 2,
+        };
+
+        let block_1: Block<CryptoPayload> = Block {
+            header: block_header_1,
+            count: 0,
+            transactions: vec![],
+        };
+
+        let block_2: Block<CryptoPayload> = Block {
+            header: block_header_2,
+            count: 0,
+            transactions: vec![],
+        };
+
+        assert_eq!(block_1.eq(&block_2), false);
+        assert_eq!(block_1.eq(&block_1), true);
+    }
+
+    #[test]
+    fn new_block() {
+        let hash = String::from("00xxxxxxxxxxxxxxxxxx");
+        let difficulty = 2;
+        let miner_addr = String::from("Schwurbel");
+        let reward = 42;
+
+        let crypto_payload = CryptoPayload {
+            receiver: String::from("Peter"),
+            amount: 42,
+        };
+        let mut transaction = vec![CryptoPayload::new(miner_addr.clone(), crypto_payload)];
+
+        let block: Block<CryptoPayload> = Block::new(hash, difficulty, miner_addr,
+                                                     reward, &mut transaction);
+
+        assert_eq!(block.count, 2);
+        assert_eq!(block.transactions.len(), 2);
+    }
+}
