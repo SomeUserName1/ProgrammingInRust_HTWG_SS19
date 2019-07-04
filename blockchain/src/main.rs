@@ -1,5 +1,4 @@
-/// Start a node and provide a cli to it
-
+/// The core datastructures to create a blockchain
 mod blockchain;
 mod crypto;
 

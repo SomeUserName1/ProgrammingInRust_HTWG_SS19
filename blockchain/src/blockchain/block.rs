@@ -81,19 +81,14 @@ impl<T> PartialEq for Block<T> {
 impl<T> Eq for Block<T> {}
 
 impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
-    pub fn new(
-        hash: String,
-        difficulty: u32,
-        miner_address: String,
-        reward: u32,
-        transactions: &mut Vec<Transaction<T>>
-                                        ) -> Self {
+    pub fn new(hash: String, difficulty: u32, miner_address: String, reward: u32,
+               transactions: &mut Vec<Transaction<T>>) -> Self {
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
             pre_hash: hash,
             merkle: String::new(),
-            difficulty
+            difficulty,
         };
 
         let reward_trans = T::genesis(miner_address, reward);
@@ -101,7 +96,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
         let mut block = Block {
             header,
             count: 0,
-            transactions: vec![]
+            transactions: vec![],
         };
 
         block.transactions.push(reward_trans);

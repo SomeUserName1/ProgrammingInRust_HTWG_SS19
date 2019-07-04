@@ -14,7 +14,7 @@ pub struct Chain<T> {
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
-    miner_addr: String, 
+    miner_addr: String,
     reward: u32,
 }
 
@@ -27,12 +27,11 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
             difficulty,
             miner_addr,
             reward: 100,
-         };
+        };
 
         chain.add_new_block();
         chain
-
-    } 
+    }
 
     pub fn add_transaction(&mut self, transactions: &mut Vec<Transaction<T>>) ->
     bool {
@@ -61,17 +60,16 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
     pub fn add_new_block(&mut self) -> bool {
         let mut block = Block::<T>::new(
             self.last_hash(), self.difficulty,
-                               self.miner_addr.clone(), self.reward, &mut self.curr_trans);
+            self.miner_addr.clone(), self.reward, &mut self.curr_trans);
 
 
         Chain::<T>::proof_of_work(&mut block.header);
-
-        println!("{:#?}", &block);
+        println!("{}", &block.fmt());
         self.chain.push(block);
         true
     }
 
-        pub fn proof_of_work(header: &mut BlockHeader) {
+    pub fn proof_of_work(header: &mut BlockHeader) {
         loop {
             let hash = hash::hash(header);
             let slice = &hash[..header.difficulty as usize];
@@ -83,7 +81,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
                         println!("Block hash: {}", hash);
                         break;
                     }
-                },
+                }
                 Err(_) => {
                     header.nonce += 1;
                     continue;
@@ -114,5 +112,5 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
         write!(&mut str, "]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
 
         str
-}
+    }
 }
