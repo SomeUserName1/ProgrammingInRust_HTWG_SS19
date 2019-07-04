@@ -13,15 +13,11 @@ readme = "README.md"
 serde = { version = "1.0.94", features = ["derive", "rc"]}
 serde_json = "1.0.39"
 serde_derive = "1.0.94"
-rand = "0.6.0"
 failure = "0.1.5"
-chrono = "0.4.7"
-log = "0.4.6"
 
 # ?
 bytes = "0.4"
-time = "0.1"
-getopts = "0.2"
+time = "0.1.42"
 
 # Crypto
 sequoia-openpgp = "0.8" # see bottom note
@@ -31,7 +27,6 @@ sha3 = "0.8.2"
 tokio = "0.1"
 tokio-io = "0.1.12"
 tokio-codec = "0.1.1"
-tokio-core = "0.1"
 futures = "0.1"
 tokio-timer = "0.1"
 uuid = { version = "0.7", features = ["serde", "v4"] }

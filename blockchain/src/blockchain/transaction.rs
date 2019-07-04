@@ -14,23 +14,21 @@ pub struct Transaction<T> {
     pub sender: String,
     /// The payload of the transaction.
     pub payload: Arc<RwLock<T>>,
-    // FIXME Signature emitted by the sender or receiver? (Both need to sign acutally do we need 2
-    // signatures then?)
-//    pub sender_signature: &'static [u8],
-//    pub receiver_signature: &'static [u8]
 }
 
-impl<T> Transaction<T> 
-where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone,
-{
-    // TODO display payload
-    /// Used to format a transaction of a block.
+
+impl<T> Transaction<T>
+    where T: Debug {
+    /// Formats a transaction with all information.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
 
         write!(&mut str, "            Transaction: [\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
         write!(&mut str, "                Sender:   {}\n", self.sender).expect("[Transaction fmt()]: Unable to write in Buffer!");
-        write!(&mut str, "            ]\n").expect("[Block fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                Payload: [\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                    {:?}\n", self.payload).expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                ]\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "           ]\n").expect("[Block fmt()]: Unable to write in Buffer!");
 
         str
     }

@@ -46,8 +46,8 @@ where T: Transactional + Send + Sync + 'static
         }
     }
 
-    pub fn run<I: Iterator<Item=SocketAddr>>(&self, addrs: I) -> Result<(), io::Error> {
-        let inner = self.inner.clone();
+    pub fn run<I: 'static + Iterator<Item=SocketAddr>>(&self, addrs: I) -> Result<(), io::Error> {
+        let inner = self.inner.clone().into_inner().unwrap();
        // spawn a server to accept incoming connections and spawn clients, which handle the
        // messages for each peer one
        tokio::run(inner.serve(addrs).map_err(|e| println!("{}", e)));
@@ -108,7 +108,7 @@ where T: Transactional + 'static + Send + Sync,
     }
 
     pub fn serve<I: Iterator<Item=SocketAddr>>(&self, addrs: I) -> impl Future<Item=(), Error=io::Error> + 'static {
-        let inner = self.clone();
+        let mut inner = self.clone();
         // for each address in the initial peer table, spawn a client to handle the messages
         // sent by this client
         for addr in addrs {
@@ -154,7 +154,7 @@ where T: Transactional + 'static + Send + Sync,
     }
 
     fn process(&self, msg: Messages<T>, tx: Tx<T>) -> Result<(), io::Error> {
-        let inner = self.clone();
+        let mut inner = self.clone();
         match msg {
             Messages::<T>::Ping(m) => inner.handle_ping(m, tx),
             Messages::<T>::Pong(m) => inner.handle_pong(m, tx),
@@ -181,7 +181,7 @@ where T: Transactional + 'static + Send + Sync,
 
 
     fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx<T>) -> Result<(), io::Error> {
-        let inner = self.clone();
+        let mut inner = self.clone();
         println!("Received ping from {:?}", m);
 
         match self.peers.get(&m.0) {
@@ -189,7 +189,7 @@ where T: Transactional + 'static + Send + Sync,
             None => {
                 let tx1 = tx.clone();
                 inner.peers.insert(m.0, (tx, m.1));
-                tx.send( Messages::<T>::Pong((inner.id, inner.addr, inner.chain.unwrap().1)))
+                tx.unbounded_send( Messages::<T>::Pong((inner.id, inner.addr, inner.chain.unwrap().1)))
                     .map_err(|_| io::Error::new(io::ErrorKind::Other, "tx failed"));
                 Ok(())
             }
@@ -199,7 +199,7 @@ where T: Transactional + 'static + Send + Sync,
 
     fn handle_pong(&mut self, m: (Uuid, SocketAddr, Chain<T>), tx: Tx<T>) -> Result<(), io::Error> {
         println!("received pong {:?}", m);
-        match self.chain {
+        match &self.chain {
             Some((count, self_chain)) => {
                 //chains match, all good and break, else one needs majority voting
                 //consensus
@@ -234,8 +234,8 @@ where T: Transactional + 'static + Send + Sync,
     }
 
     fn integrate_transaction(&self, m: Transaction<T>) -> Result<(), io::Error> {
-        match self.chain {
-            Some((count, chain)) => {
+        match &self.chain {
+            Some((count, mut chain)) => {
                 chain.add_transaction(&mut vec!(m));
                 if chain.get_no_curr_trans().eq(&0) {
                     for (tx, addr) in self.peers.values() {
@@ -246,11 +246,12 @@ where T: Transactional + 'static + Send + Sync,
                 Ok(())
             }
             None => Ok(()),
+            _ => Ok(())
         }
 
     }
 
-    fn majority_consensus(&self, chain: Chain<T>) {
+    fn majority_consensus(&mut self, chain: Chain<T>) {
         if self.alt_chains.len() < 1 {
            self.alt_chains.push_back((1, chain));
             return;

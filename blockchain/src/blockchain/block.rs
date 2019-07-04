@@ -125,7 +125,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + Transactional + Send
         write!(&mut str, "        Transactions: [\n").expect("[Block fmt()]: Unable to write in Buffer!");
 
         for transaction in self.transactions {
-            write!(&mut str, "{}", transaction.fmt()).expect("[Block fmt()]: Unable to write in Buffer!");
+            write!(&mut str, "{:?}", transaction.fmt()).expect("[Block fmt()]: Unable to write in Buffer!");
         }
 
         write!(&mut str, "        ]\n").expect("[Block fmt()]: Unable to write in Buffer!");

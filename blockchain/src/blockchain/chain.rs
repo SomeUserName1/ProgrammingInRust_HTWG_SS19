@@ -118,7 +118,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + Transactional + Send
         write!(&mut str, "    Current Transactions: [\n").expect("[Chain fmt()]: Unable to write in Buffer!");
 
         for trans in &self.curr_trans {
-            write!(&mut str, "{}", trans.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
+            write!(&mut str, "{:?}", trans.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
         }
 
         write!(&mut str, "    ]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
