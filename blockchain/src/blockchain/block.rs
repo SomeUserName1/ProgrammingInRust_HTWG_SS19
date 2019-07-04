@@ -24,8 +24,7 @@ pub struct BlockHeader {
 
     /// The merkle tree of a block.
     ///
-    /// A Merkle tree summarizes all the transactions in a block by producing a digital fingerprint
-    /// of the entire set of transactions, thereby enabling a user to verify whether or not a transaction is included in a bloc
+    /// See the doc of merkle.rs for more information.
     merkle: String,
 
     /// The difficulty to mine a new block.
@@ -35,12 +34,15 @@ pub struct BlockHeader {
     pub difficulty: u32,
 }
 
+/// We want to be able to compare block headers.
 impl PartialEq for BlockHeader {
     fn eq(&self, other: &Self) -> bool {
         self.timestamp.eq(&other.timestamp) && self.pre_hash.eq(&other.pre_hash)
             && self.merkle.eq(&other.merkle)
     }
 }
+
+impl Eq for BlockHeader {}
 
 impl BlockHeader {
     /// Used to format the header of a block.
@@ -59,8 +61,6 @@ impl BlockHeader {
     }
 }
 
-impl Eq for BlockHeader {}
-
 /// A block of the blockchain
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block<T> {
@@ -72,6 +72,7 @@ pub struct Block<T> {
     transactions: Vec<Transaction<T>>,
 }
 
+/// We want to be able to compare blocks. A delegation to comparing the headers is sufficient.
 impl<T> PartialEq for Block<T> {
     fn eq(&self, other: &Self) -> bool {
         self.header.eq(&other.header)
@@ -81,27 +82,26 @@ impl<T> PartialEq for Block<T> {
 impl<T> Eq for Block<T> {}
 
 impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
-    pub fn new(
-        hash: String,
-        difficulty: u32,
-        miner_address: String,
-        reward: u32,
-        transactions: &mut Vec<Transaction<T>>
-                                        ) -> Self {
+    /// Creates a new block. Should be called through Chain to prevent inconsistencies.
+    pub fn new(hash: String, difficulty: u32, miner_address: String, reward: u32,
+               transactions: &mut Vec<Transaction<T>>,
+    ) -> Self {
+        /// Produces a block with nonce 0, to be changed later after mining.
         let header = BlockHeader {
             timestamp: time::now().to_timespec().sec,
             nonce: 0,
             pre_hash: hash,
             merkle: String::new(),
-            difficulty
+            difficulty,
         };
 
+        /// Creates an initial transaction for the block.
         let reward_trans = T::genesis(miner_address, reward);
 
         let mut block = Block {
             header,
             count: 0,
-            transactions: vec![]
+            transactions: vec![],
         };
 
         block.transactions.push(reward_trans);
@@ -128,5 +128,87 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
         write!(&mut str, "    ]\n").expect("[Block fmt()]: Unable to write in Buffer!");
 
         str
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::blockchain::block::{BlockHeader, Block};
+    use crate::blockchain::transaction::{CryptoPayload, Transactional};
+
+    #[test]
+    fn block_header_eq() {
+        let block_header_1 = BlockHeader {
+            timestamp: 0,
+            pre_hash: String::from("00xxxxxxxxxxxxxxxxxx"),
+            nonce: 24,
+            merkle: String::from("xxxxxxxxxxxxxxxxxxxx"),
+            difficulty: 2,
+        };
+
+        let block_header_2 = BlockHeader {
+            timestamp: 1,
+            pre_hash: String::from("00yyyyyyyyyyyyyyyyyy"),
+            nonce: 42,
+            merkle: String::from("yyyyyyyyyyyyyyyyyyyy"),
+            difficulty: 2,
+        };
+
+        assert_eq!(block_header_1.eq(&block_header_2), false);
+        assert_eq!(block_header_1.eq(&block_header_1), true);
+    }
+
+    #[test]
+    fn block_eq() {
+        let block_header_1 = BlockHeader {
+            timestamp: 0,
+            pre_hash: String::from("00xxxxxxxxxxxxxxxxxx"),
+            nonce: 24,
+            merkle: String::from("xxxxxxxxxxxxxxxxxxxx"),
+            difficulty: 2,
+        };
+
+        let block_header_2 = BlockHeader {
+            timestamp: 1,
+            pre_hash: String::from("00yyyyyyyyyyyyyyyyyy"),
+            nonce: 42,
+            merkle: String::from("yyyyyyyyyyyyyyyyyyyy"),
+            difficulty: 2,
+        };
+
+        let block_1: Block<CryptoPayload> = Block {
+            header: block_header_1,
+            count: 0,
+            transactions: vec![],
+        };
+
+        let block_2: Block<CryptoPayload> = Block {
+            header: block_header_2,
+            count: 0,
+            transactions: vec![],
+        };
+
+        assert_eq!(block_1.eq(&block_2), false);
+        assert_eq!(block_1.eq(&block_1), true);
+    }
+
+    #[test]
+    fn new_block() {
+        let hash = String::from("00xxxxxxxxxxxxxxxxxx");
+        let difficulty = 2;
+        let miner_addr = String::from("Schwurbel");
+        let reward = 42;
+
+        let crypto_payload = CryptoPayload {
+            receiver: String::from("Peter"),
+            amount: 42,
+        };
+        let mut transaction = vec![CryptoPayload::new(miner_addr.clone(), crypto_payload)];
+
+        let block: Block<CryptoPayload> = Block::new(hash, difficulty, miner_addr,
+                                                     reward, &mut transaction);
+
+        assert_eq!(block.count, 2);
+        assert_eq!(block.transactions.len(), 2);
     }
 }

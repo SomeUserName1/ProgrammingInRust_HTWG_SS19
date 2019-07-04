@@ -1,8 +1,13 @@
+//! Hashing functions. Uses Sha3_512.
+
 use std::fmt::Write;
 
 use sha3::{Sha3_512, Digest};
 use serde;
 
+/// Hashes a given T which needs to serializable.
+/// Returns:
+/// The hash as a string
 pub fn hash<T: serde::Serialize>(item: &T) -> String {
 
     let input = serde_json::to_string(&item).unwrap();
@@ -14,6 +19,7 @@ pub fn hash<T: serde::Serialize>(item: &T) -> String {
     hex_to_string(vec_res.as_slice())
 }
 
+/// Helper function for converting hashes to strings.
 pub fn hex_to_string(vec_res: &[u8]) -> String {
     let mut s = String::new();
     for b in vec_res {

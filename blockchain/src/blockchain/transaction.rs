@@ -1,3 +1,9 @@
+//! The transactions of our chain. A transaction consists of a sender
+//! and the payload. Depending on the type of blockchain, different
+//! payloads can be chosen, such as: CryptoPayload (ala cryptocurrency
+//! containing a value), VotePayload (containing the choice) and CodePayload
+//! (like git, a file name, file content and a message).
+
 use std::marker::Sized;
 use std::clone::Clone;
 use std::fmt::Debug;
@@ -5,40 +11,44 @@ use std::fmt::Write;
 
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
-
 /// The transaction stored in a block of the blockchain.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Transaction<T> {
-     /// The sender of the transaction.
-     pub sender: String,
-     /// The payload of the transaction.
-     pub payload: T,
+    /// The sender of the transaction.
+    pub sender: String,
+    /// The payload of the transaction.
+    pub payload: T,
 }
 
-impl<T> Transaction<T> {
-/// Used to format a transaction of a block.
+impl<T> Transaction<T>
+    where T: std::fmt::Debug {
+    /// Formats a transaction with all information.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
 
-        write!(&mut str, "       Transaction: [\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
-        write!(&mut str, "          Sender:   {}\n", self.sender).expect("[Transaction fmt()]: Unable to write in Buffer!");
-        write!(&mut str, "      ]\n").expect("[Block fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "            Transaction: [\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                Sender:   {}\n", self.sender).expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                Payload: [\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                    {:?}\n", self.payload).expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "                ]\n").expect("[Transaction fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "           ]\n").expect("[Block fmt()]: Unable to write in Buffer!");
 
         str
     }
 }
 
 pub trait Transactional
-where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
-/// Creates a new transaction with a sender and the specified payload.
+    where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
+    /// Creates a new transaction with a sender and the specified payload.
     fn new(sender: String, payload: Self) -> Transaction<Self> { // , key:
-	Transaction {
-              sender,
-              payload,
-	 }
-     }
+        Transaction {
+            sender,
+            payload,
+        }
+    }
 
-     fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
+    /// For each type of transaction, we need to be able to initialize the chain.
+    fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
 }
 
 
@@ -70,6 +80,7 @@ pub struct CodePayload {
     pub commit_message: String,
 }
 
+/// Creates a classic genesis block for cryptocurrency blockchains.
 impl Transactional for CryptoPayload {
     fn genesis(miner_address: String, reward: u32) -> Transaction<CryptoPayload> {
         Transaction {
@@ -82,6 +93,7 @@ impl Transactional for CryptoPayload {
     }
 }
 
+/// Creates a "root" vote.
 impl Transactional for VotePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<VotePayload> {
         Transaction {
@@ -93,6 +105,7 @@ impl Transactional for VotePayload {
     }
 }
 
+/// Creates an initial commit ala git.
 impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload> {
         Transaction {
