@@ -52,20 +52,20 @@ where T: Transactional + Sync + 'static
        // messages for each peer one
        tokio::run(Node::serve(&self, addrs).map_err(|e| println!("{}", e)));
 
-      Ok(()) 
+      Ok(())
     }
 
-    fn start_client(&self, addr: SocketAddr) -> impl Future<Item=(), Error=io::Error> {
+    fn start_client(&self, addr: SocketAddr) -> Box<(Future<Item=(), Error=io::Error> + 'static)> {
         println!("Starting client for {}", addr);
 
         // Define the client
-         TcpStream::connect(&addr).and_then(|socket| {
+         Box::new(TcpStream::connect(&addr).and_then(|socket| {
             println!("connected! local: {:?}, peer: {:?}", socket.local_addr(), socket.peer_addr());
             let framed_socket = codec::Framed::new(socket, MessagesCodec::<T>::new());
 
             let (sink, stream) = framed_socket.split();
             let (tx, rx): (Tx<T>, Rx<T>) = mpsc::unbounded();
-            
+
             // process messages from other clients
             let read = stream.for_each(|msg| {
                     Node::process(&self, msg, tx.clone())
@@ -77,19 +77,19 @@ where T: Transactional + Sync + 'static
             tokio::spawn(read);
 
             // Send Ping to bootstrap
-            mpsc::UnboundedSender::unbounded_send(&tx.clone(), 
+            mpsc::UnboundedSender::unbounded_send(&tx.clone(),
                                                   Messages::<T>::Ping((self.id, self.addr.clone())))
                .expect("Ping failed");
-            
+
             tokio::spawn(sink.send_all(
                     rx.map_err(|e| io::Error::new(io::ErrorKind::Other, "Error")))
                         .then(|_| Err(()))
             );
             Ok(())
-        })
+        }))
     }
 
-    fn serve<I: Iterator<Item=SocketAddr>>(&self, addrs: I) -> impl Future<Item=(), Error=io::Error> {
+    fn serve<I: Iterator<Item=SocketAddr>>(&self, addrs: I) ->  Box<(Future<Item=(), Error=io::Error> + 'static)> {
         // for each address in the initial peer table, spawn a client to handle the messages
         // sent by this client
         for addr in addrs {
@@ -100,9 +100,9 @@ where T: Transactional + Sync + 'static
                     Ok(())
             }));
         }
-        
+
         let cache_reset = Interval::new(Instant::now(), Duration::from_secs(30*60)).for_each(|_| {
-                self.alt_chains.clear(); 
+                self.alt_chains.clear();
                 Ok(())
             }).map_err(|e| panic!("interval errored, {:?}", e));
         // Delete the list of alternative chains all 30 min
@@ -122,15 +122,15 @@ where T: Transactional + Sync + 'static
         let listener =  TcpListener::bind(&self.addr).unwrap();
         println!("listening on {}", self.addr);
 
-        let srv = listener.incoming()
+        let srv = Box::new(listener.incoming()
             .for_each(move |socket| {
                 let peer = socket.peer_addr().unwrap();
                 tokio::spawn(
                     Node::start_client(self, peer).then(move |x| {
-                        Ok(())   
+                        Ok(())
                     }));
                 Ok(())
-            });
+            }));
         srv
     }
 
@@ -156,9 +156,9 @@ where T: Transactional + Sync + 'static
         })
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
     }
-   
+
     fn broadcast_pong(&self) -> Result<(), io::Error> {
-        
+
     }
 
     fn hanlde_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx<T>) -> Result<(), io::Error> {
@@ -177,7 +177,7 @@ where T: Transactional + Sync + 'static
 
     fn handle_pong(&mut self, m: (Uuid, SocketAddr, Chain<T>), tx: Tx<T>) -> Result<(), io::Error> {
         println!("received pong {:?}", m);
-        
+
         match m.3 {
             Some(pong_chain) => {
                 match self.chain {
@@ -214,13 +214,13 @@ where T: Transactional + Sync + 'static
 
     fn integrate_transaction(&self, m: Transaction<T>) -> Result<(), io::Error> {
         match self.chain {
-            Some((count, chain)) => { 
+            Some((count, chain)) => {
                 chain.add_transaction(m);
                 if chain.get_no_curr_trans.eq(0) {
                     for (tx, addr) in self.peers.values() {
                         tx.send( Messages::<T>::Pong((self.id, self.addr, self.chain)))
                         .map_err(|_| io::Error::new(io::ErrorKind::Other, "tx failed"))
-                    }             
+                    }
                 }
             }
             None => {},
