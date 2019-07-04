@@ -42,7 +42,9 @@ impl PartialEq for BlockHeader {
     }
 }
 
-impl BlockHeader {
+impl BlockHeader 
+where Self: Send
+{
     /// Used to format the header of a block.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
@@ -80,7 +82,9 @@ impl<T> PartialEq for Block<T> {
 
 impl<T> Eq for Block<T> {}
 
-impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq> Block<T> {
+impl<T> Block<T>
+where T: Serialize + DeserializeOwned + Debug + Clone + Transactional + Send
+{
     pub fn new(
         hash: String,
         difficulty: u32,
@@ -120,7 +124,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + Transactional + PartialEq
         write!(&mut str, "        Number of Transactions: {}\n", self.count).expect("[Block fmt()]: Unable to write in Buffer!");
         write!(&mut str, "        Transactions: [\n").expect("[Block fmt()]: Unable to write in Buffer!");
 
-        for transaction in &self.transactions {
+        for transaction in self.transactions {
             write!(&mut str, "{}", transaction.fmt()).expect("[Block fmt()]: Unable to write in Buffer!");
         }
 

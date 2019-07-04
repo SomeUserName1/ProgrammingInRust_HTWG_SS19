@@ -20,7 +20,7 @@ pub struct Chain<T> {
 }
 
 impl<T> Chain<T>
-where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional 
+where T: Serialize + DeserializeOwned + Debug + Clone + Transactional + Send 
 {
     pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
         let mut chain = Chain {
@@ -35,7 +35,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
         chain
     }
 
-    pub fn add_transaction(&mut self, transactions: Vec<Transaction<T>>) ->
+    pub fn add_transaction(&mut self, transactions: &mut Vec<Transaction<T>>) ->
     bool {
         self.curr_trans.append(transactions);
 
@@ -81,7 +81,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
         true
     }
 
-    pub fn get_no_curr_trans(&self) -> u32 {
+    pub fn get_no_curr_trans(&self) -> usize {
         self.curr_trans.len()
     }
 

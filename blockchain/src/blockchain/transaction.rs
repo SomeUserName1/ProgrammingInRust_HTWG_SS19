@@ -2,24 +2,27 @@ use std::marker::Sized;
 use std::clone::Clone;
 use std::fmt::Debug;
 use std::fmt::Write;
+use std::sync::{Arc, RwLock};
 
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
 
 /// The transaction stored in a block of the blockchain.
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction<T> {
     /// The sender of the transaction.
     pub sender: String,
     /// The payload of the transaction.
-    pub payload: T,
+    pub payload: Arc<RwLock<T>>,
     // FIXME Signature emitted by the sender or receiver? (Both need to sign acutally do we need 2
     // signatures then?)
 //    pub sender_signature: &'static [u8],
 //    pub receiver_signature: &'static [u8]
 }
 
-impl<T> Transaction<T> {
+impl<T> Transaction<T> 
+where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone,
+{
     // TODO display payload
     /// Used to format a transaction of a block.
     pub fn fmt(&self) -> String {
@@ -39,7 +42,7 @@ where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug
     fn new(sender: String, payload: Self) -> Transaction<Self> { // , key: sequoia_openpgp::TPK
         Transaction {
             sender,
-            payload,
+            payload: Arc::new(RwLock::new(payload)),
             // FIXME create the sender signature with the key. 
         }
     }
@@ -79,10 +82,10 @@ impl Transactional for CryptoPayload {
     fn genesis(miner_address: String, reward: u32) -> Transaction<CryptoPayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: CryptoPayload {
+            payload: Arc::new(RwLock::new(CryptoPayload {
                 receiver: miner_address,
                 amount: reward,
-            },
+            })),
         }
     }
 }
@@ -91,9 +94,9 @@ impl Transactional for VotePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<VotePayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: VotePayload {
+            payload: Arc::new(RwLock::new(VotePayload {
                 vote: String::from("Root"),
-            },
+            })),
         }
     }
 }
@@ -102,11 +105,11 @@ impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: CodePayload {
+            payload: Arc::new(RwLock::new(CodePayload {
                 file_name: String::from("Readme.md"),
                 contents: String::from(""),
                 commit_message: String::from("Initialize Repository"),
-            },
+            })),
         }
     }
 }
