@@ -43,7 +43,7 @@ pub struct Node
 // TODO on bootstrap, get full chain
 
 impl Node {
-    pub fn new(addr: SocketAddr) -> Node {
+    pub fn new(addr: SocketAddr) -> Node { 
         let node = NodeInner {
             id: Uuid::new_v4(), // TODO PK
             addr,
@@ -55,9 +55,8 @@ impl Node {
     }
 
     pub fn run<I: Iterator<Item=SocketAddr>>(&self, handle: Handle, addrs: I)
-                                             -> Box<Future<Item=(), Error=io::Error>> {
+                                               -> Box<Future<Item=(), Error=io::Error>> {
         let inner = self.inner.clone();
-
         // start the server
         let f = Node::serve(inner.clone(), handle.clone());
 
@@ -76,7 +75,7 @@ impl Node {
         f
     }
 
-    fn start_client(inner: Rc<RefCell<NodeInner>>, handle: Handle, addr: SocketAddr) {
+    fn start_client(inner: Rc<RefCell<NodeInner>>, handle: Handle, addr: SocketAddr) { 
         handle.spawn(Node::start_client_actual(inner, handle.clone(), &addr).then(move |x| {
             println!("client {} done {:?}", addr, x);
             Ok(())
@@ -123,8 +122,6 @@ impl Node {
 
     fn serve(inner: Rc<RefCell<NodeInner>>, handle: Handle)
              -> Box<Future<Item=(), Error=io::Error>> {
-
-        // TODO how to connect? bootstrap nodes!
 
         let socket = TcpListener::bind(&inner.borrow().addr, &handle).unwrap();
         println!("listening on {}", inner.borrow().addr);
@@ -174,9 +171,6 @@ impl Node {
         }
     }
 
-    pub fn broadcast(&self, m: String) {
-        self.inner.borrow().broadcast(m)
-    }
 
     pub fn gossip_peers(&self, duration: Duration) -> Box<Future<Item=(), Error=io::Error>> {
         let inner = self.inner.clone();
@@ -197,7 +191,7 @@ impl Node {
 
 type Tx = mpsc::UnboundedSender<Msg>;
 
-struct NodeInner {
+struct NodeInner { 
     pub id: Uuid, // TODO Public key
     pub addr: SocketAddr,
     pub peers: HashMap<Uuid, (Tx, SocketAddr)>, // TODO public key
@@ -214,13 +208,13 @@ impl NodeInner {
         }
     }
 
-    pub fn send_random(&self, m: Msg) {
+    pub fn send_random(&self, m:  Msg) {
         // println!("sending {:?} to random node", m);
         let high = self.peers.len();
-        loop {
-            for v in self.peers.values() {
+        loop { 
+            for v in self.peers.values() { 
                 let tx = &v.0;
-                if self.rng.borrow_mut().gen_range(0, high) == 0 {
+                if self.rng.borrow_mut().gen_range(0, high) == 0  {
                     tx.send(m).expect("tx send failed");
                     return;
                 }
@@ -229,9 +223,9 @@ impl NodeInner {
     }
 
     fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx) -> Result<(),
-        io::Error> {
+        io::Error> { 
         println!("received ping: {:?}", m);
-        match self.peers.get(&m.0) {
+        match self.peers.get(&m.0) { 
             Some(_) => {
                 println!("PING ALREADY EXIST! {:?}", m);
                 // TODO drop this connection;; FIXME why?!
@@ -247,7 +241,7 @@ impl NodeInner {
         }
     }
 
-    fn handle_pong(&mut self, m: (Uuid, SocketAddr), tx: Tx) -> Result<(), io::Error> {
+    fn handle_pong(&mut self, m: (Uuid, SocketAddr), tx: Tx) -> Result<(), io::Error> { 
         println!("received pong: {:?}", m);
         match self.peers.get(&m.0) {
             Some(_) => {

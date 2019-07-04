@@ -4,8 +4,6 @@ use sequoia_openpgp as openpgp;
 use openpgp::serialize::stream::*;
 use openpgp::parse::stream::*;
 
-const MESSAGE: &'static str = "дружба";
-
 /// Signs the given message.
 fn sign(sink: &mut Write, plaintext: &str, tsk: &openpgp::TPK)
         -> openpgp::Result<()> {

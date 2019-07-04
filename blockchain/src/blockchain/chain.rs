@@ -10,7 +10,7 @@ use super::block::{Block, BlockHeader};
 use super::transaction::{Transaction, Transactional};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Chain<T> {
+pub struct Chain<T> { 
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
@@ -18,7 +18,7 @@ pub struct Chain<T> {
     reward: u32,
 }
 
-impl<T: > Chain<T>
+impl<T> Chain<T>
 where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional 
 {
     pub fn new(miner_addr: String, difficulty: u32) -> Chain<T> {
@@ -35,9 +35,13 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
 
     } 
 
-    pub fn add_transaction(&mut self, transactions: &mut Vec<Transaction<T>>) ->
+    pub fn add_transaction(&mut self, transactions: Vec<Transaction<T>>) ->
     bool {
         self.curr_trans.append(transactions);
+
+        if self.curr_trans.len() > 20 {
+            self.add_new_block();
+        }
         true
     }
 
@@ -59,7 +63,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
         true
     }
 
-    pub fn add_new_block(&mut self) -> bool {
+    pub fn add_new_block(&mut self) -> bool  {
         let mut block = Block::<T>::new(
             self.last_hash(), self.difficulty,
                                self.miner_addr.clone(), self.reward, &mut self.curr_trans);
@@ -69,10 +73,19 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
 
         println!("{:#?}", &block);
         self.chain.push(block);
+        self.curr_trans.clear();
+        if self.chain.len() % 100 == 0 {
+           self.difficulty += 1; 
+           self.reward += 1;
+        }
         true
     }
 
-        pub fn proof_of_work(header: &mut BlockHeader) {
+    pub fn get_no_curr_trans(&self) -> u32 {
+        self.curr_trans.len()
+    }
+
+    pub fn proof_of_work(header: &mut  BlockHeader) {
         loop {
             let hash = hash::hash(header);
             let slice = &hash[..header.difficulty as usize];

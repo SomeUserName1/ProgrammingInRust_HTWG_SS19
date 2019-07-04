@@ -13,7 +13,7 @@ pub struct Transaction<T> {
 }
 
 pub trait Transactional
-    where Self: Sized + Send + Serialize + DeserializeOwned+ PartialEq + Eq + Debug + Clone {
+    where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
     fn new(sender: String, payload: Self) -> Transaction<Self> {
         Transaction {
             sender,
