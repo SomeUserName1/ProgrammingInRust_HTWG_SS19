@@ -1,6 +1,7 @@
 /// data structure to maintain the chain
 use std::fmt::Debug;
 use std::clone::Clone;
+use std::fmt::Write;
 
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
@@ -14,7 +15,7 @@ pub struct Chain<T> {
     chain: Vec<Block<T>>,
     curr_trans: Vec<Transaction<T>>,
     difficulty: u32,
-    miner_addr: String, 
+    miner_addr: String,
     reward: u32,
 }
 
@@ -32,8 +33,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
 
         chain.add_new_block();
         chain
-
-    } 
+    }
 
     pub fn add_transaction(&mut self, transactions: Vec<Transaction<T>>) ->
     bool {
@@ -66,7 +66,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
     pub fn add_new_block(&mut self) -> bool  {
         let mut block = Block::<T>::new(
             self.last_hash(), self.difficulty,
-                               self.miner_addr.clone(), self.reward, &mut self.curr_trans);
+            self.miner_addr.clone(), self.reward, &mut self.curr_trans);
 
 
         Chain::<T>::proof_of_work(&mut block.header);
@@ -85,7 +85,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
         self.curr_trans.len()
     }
 
-    pub fn proof_of_work(header: &mut  BlockHeader) {
+    pub fn proof_of_work(header: &mut BlockHeader) {
         loop {
             let hash = hash::hash(header);
             let slice = &hash[..header.difficulty as usize];
@@ -97,7 +97,7 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
                         println!("Block hash: {}", hash);
                         break;
                     }
-                },
+                }
                 Err(_) => {
                     header.nonce += 1;
                     continue;
@@ -105,17 +105,40 @@ where T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactiona
             };
         }
     }
+
+    pub fn fmt(&self) -> String {
+        let mut str = String::new();
+
+        write!(&mut str, "Chain [\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        for block in &self.chain {
+            write!(&mut str, "{}", block.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
+        }
+
+        write!(&mut str, "    Current Transactions: [\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        for trans in &self.curr_trans {
+            write!(&mut str, "{}", trans.fmt()).expect("[Chain fmt()]: Unable to write in Buffer!");
+        }
+
+        write!(&mut str, "    ]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "    Difficulty:    {}\n", &self.difficulty).expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "    Miner address: {}\n", &self.miner_addr).expect("[Chain fmt()]: Unable to write in Buffer!");
+        write!(&mut str, "]\n").expect("[Chain fmt()]: Unable to write in Buffer!");
+
+        str
+    }
 }
 
 impl<T> PartialEq for Chain<T>
-where T: Serialize + DeserializeOwned + Transactional + Clone + Transactional 
+where T: Serialize + DeserializeOwned + Transactional + Clone + Transactional
 {
     fn eq(&self, other: &Self) -> bool {
         self.chain.first().eq(&other.chain.first())
     }
 }
 
-impl<T> Eq for Chain<T> 
+impl<T> Eq for Chain<T>
 where T: Transactional + DeserializeOwned
 {}
 
