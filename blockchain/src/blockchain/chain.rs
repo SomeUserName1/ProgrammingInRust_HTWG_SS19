@@ -99,9 +99,32 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
         true
     }
 
-    /// Primary function for our proof of work consensus mechanism. Wraps around `async_search`
-    /// and waits for a solution.
-    pub fn proof_of_work(header: &mut BlockHeader) -> Result<(), RecvError> {
+    /// Primary function for our proof of work consensus mechanism.
+    /// Works single threaded but can be exchanged
+    pub fn proof_of_work(header: &mut BlockHeader) {
+        loop {
+            let hash = hash::hash(header);
+            let slice = &hash[..header.difficulty as usize];
+            match slice.parse::<u32>() {
+                Ok(val) => {
+                    if val != 0 {
+                        header.nonce += 1;
+                    } else {
+                        println!("Block hash: {}", hash);
+                        break;
+                    }
+                }
+                Err(_) => {
+                    header.nonce += 1;
+                    continue;
+                }
+            };
+        }
+    }
+
+    /// Secundary function for asynchronous mining. Not used for testing purposes.
+    #[allow(dead_code)]
+    pub fn proof_of_work_async(header: &mut BlockHeader) -> Result<(), RecvError> {
         match async_search(header.clone()) {
             Ok(sol) => {
                 header.nonce = sol.0 as u32;
@@ -137,6 +160,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
 
 /// Kicks off the asynchronous search by cloning the header and dividing the space to search though.
 /// For each division, it spawns a thread and waits for a worker to return.
+#[allow(dead_code)]
 fn async_search(header: BlockHeader) -> Result<Solution, RecvError> {
     let found = Arc::new(AtomicBool::new(false));
     let (sender, receiver) = mpsc::channel();
@@ -159,6 +183,7 @@ fn async_search(header: BlockHeader) -> Result<Solution, RecvError> {
 /// A search worker. When mining, there are as many workers as defined in `NTHREADS`. For not searching
 /// though the same space, each worker will skip the next `NTHREADS` numbers. So besides some overhead,
 /// this will be n times faster than using a single thread.
+#[allow(dead_code)]
 fn search_for_solution(start_at: usize, sender: mpsc::Sender<Solution>, is_solution_found: Arc<AtomicBool>, header: BlockHeader) {
     let mut iteration_no = 0;
     for number in (start_at..).step_by(NTHREADS) {
@@ -177,6 +202,7 @@ fn search_for_solution(start_at: usize, sender: mpsc::Sender<Solution>, is_solut
 }
 
 /// Hashes the given header and checks whether the result ends with defined difficulty or not.
+#[allow(dead_code)]
 fn verify_number(number: usize, header: BlockHeader) -> Option<Solution> {
     let hash: String = hash::hash(&header);
     if hash.ends_with(header.difficulty.to_string().as_str()) {
