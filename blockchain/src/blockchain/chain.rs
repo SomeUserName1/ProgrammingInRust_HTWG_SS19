@@ -118,21 +118,25 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
 mod tests {
     use crate::blockchain::chain::Chain;
     use crate::blockchain::transaction::{CryptoPayload, Transactional};
+    use crate::crypto::hash;
 
     #[test]
-    fn create_crypto_block_chain() {
+    fn create_block_chain() {
         let miner_addr = String::from("Hans");
         let difficulty = 1;
-        let chain = Chain::<CryptoPayload>::new(miner_addr, difficulty);
+        let chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
 
         assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.miner_addr, miner_addr);
         assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(0).unwrap().header));
+        assert_eq!(chain.difficulty, 1);
         assert_eq!(chain.curr_trans.len(), 0);
         assert_eq!(chain.reward, 100);
     }
 
     #[test]
-    fn add_crypto_transaction_to_block_chain() {
+    fn add_transaction() {
         let miner_addr = String::from("Hans");
         let difficulty = 1;
         let mut chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
@@ -141,14 +145,83 @@ mod tests {
             receiver: String::from("Peter"),
             amount: 42
         };
-        let mut transaction = vec![CryptoPayload::new(miner_addr, crypto_payload)];
+        let mut transaction = vec![CryptoPayload::new(miner_addr.clone(), crypto_payload)];
 
 
         chain.add_transaction(&mut transaction);
 
         assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.miner_addr, miner_addr);
         assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(0).unwrap().header));
+        assert_eq!(chain.difficulty, 1);
         assert_eq!(chain.curr_trans.len(), 1);
+        assert_eq!(chain.reward, 100);
+    }
+
+    #[test]
+    fn get_last_hash() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
+
+        assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.miner_addr, miner_addr);
+        assert_eq!(chain.difficulty, 1);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(0).unwrap().header));
+        assert_eq!(chain.curr_trans.len(), 0);
+        assert_eq!(chain.reward, 100);
+    }
+
+    #[test]
+    fn update_difficulty() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let mut chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
+
+        chain.update_difficulty(2);
+
+        assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.miner_addr, miner_addr);
+        assert_eq!(chain.difficulty, 2);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(0).unwrap().header));
+        assert_eq!(chain.curr_trans.len(), 0);
+        assert_eq!(chain.reward, 100);
+    }
+
+    #[test]
+    fn update_reward() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let mut chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
+
+        chain.update_reward(50);
+
+        assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.miner_addr, miner_addr);
+        assert_eq!(chain.difficulty, 1);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(0).unwrap().header));
+        assert_eq!(chain.curr_trans.len(), 0);
+        assert_eq!(chain.reward, 50);
+    }
+
+    #[test]
+    fn add_new_block() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let mut chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
+
+        chain.add_new_block();
+
+        assert_eq!(chain.chain.len(), 2);
+        assert_eq!(chain.miner_addr, miner_addr);
+        assert_eq!(chain.difficulty, 1);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.last_hash(), hash::hash(&chain.chain.get(1).unwrap().header));
+        assert_eq!(chain.curr_trans.len(), 0);
         assert_eq!(chain.reward, 100);
     }
 }
