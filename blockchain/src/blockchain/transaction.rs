@@ -13,11 +13,14 @@ pub struct Transaction<T> {
     pub sender: String,
     /// The payload of the transaction.
     pub payload: T,
+    // FIXME Signature emitted by the sender or receiver? (Both need to sign acutally do we need 2
+    // signatures then?)
+//    pub sender_signature: &'static [u8],
+//    pub receiver_signature: &'static [u8]
 }
 
 impl<T> Transaction<T> {
     // TODO display payload
-
     /// Used to format a transaction of a block.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
@@ -31,15 +34,13 @@ impl<T> Transaction<T> {
 }
 
 pub trait Transactional
-    where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
-<<<<<<< HEAD
-=======
+where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
     /// Creates a new transaction with a sender and the specified payload.
->>>>>>> 943b48ddb9d9d973ede3fe3a01ad636159baed9a
-    fn new(sender: String, payload: Self) -> Transaction<Self> {
+    fn new(sender: String, payload: Self) -> Transaction<Self> { // , key: sequoia_openpgp::TPK
         Transaction {
             sender,
             payload,
+            // FIXME create the sender signature with the key. 
         }
     }
 

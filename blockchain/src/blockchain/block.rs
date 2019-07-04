@@ -59,7 +59,6 @@ impl BlockHeader {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 impl Eq for BlockHeader {}
 
 /// A block of the blockchain

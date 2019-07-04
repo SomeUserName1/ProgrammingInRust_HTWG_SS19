@@ -11,13 +11,12 @@ use tokio::net::{TcpStream, TcpListener};
 use tokio::timer::Interval;
 use uuid::Uuid;
 //use sequoia_openpgp as openpgp;
+use crate::blockchain::chain::Chain;
+use crate::blockchain::transaction::{Transaction, Transactional};
+use crate::crypto::keys; // {keys, sign, cipher};
 
 use super::messages::Messages;
 use super::codec::MessagesCodec;
-
-use crate::blockchain::chain::Chain;
-use crate::blockchain::transaction::{Transaction, Transactional};
-use crate::crypto::key;
 
 type Tx<T> = mpsc::UnboundedSender<Messages<T>>;
 type Rx<T> = mpsc::UnboundedReceiver<Messages<T>>;
@@ -37,7 +36,7 @@ where T: Transactional + Sync + 'static
 {
     fn new(addr: SocketAddr) -> Node<T> {
         let id = Uuid::new_v4();
-        let (keys, _) = key::generate(id).expect("Failed to generate keys!");
+        let (_keys, _) = keys::generate(id).expect("Failed to generate keys!");
         Node {
             id,
             //keys,

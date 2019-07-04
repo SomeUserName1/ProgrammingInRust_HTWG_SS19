@@ -1,4 +1,5 @@
-use std::io::{Write, copy};
+use std::str;
+use std::io::{self, Write};
 
 use sequoia_openpgp as openpgp;
 use openpgp::crypto::SessionKey;
@@ -6,8 +7,13 @@ use openpgp::constants::SymmetricAlgorithm;
 use openpgp::serialize::stream::*;
 use openpgp::parse::stream::*;
 
+//use crate::node::messages::Messages;
+use crate::blockchain::transaction::Transactional;
+
 use super::sign::Helper;
 
+//TODO: sign and verify transactions, not bytes
+//TODO: encrypt and decrypt messages
 
 /// Encrypts the given message.
 fn encrypt(sink: &mut Write, plaintext: &str, recipient: &openpgp::TPK)
@@ -29,7 +35,7 @@ fn encrypt(sink: &mut Write, plaintext: &str, recipient: &openpgp::TPK)
     // Encrypt the data.
     literal_writer.write_all(plaintext.as_bytes())?;
 
-   // Finalize the OpenPGP message to make sure that all data is
+    // Finalize the OpenPGP message to make sure that all data is
     // written.
     literal_writer.finalize()?;
 
@@ -49,7 +55,7 @@ fn decrypt(sink: &mut Write, ciphertext: &[u8], recipient: &openpgp::TPK)
     let mut decryptor = Decryptor::from_bytes(ciphertext, helper, None)?;
 
     // Decrypt the data.
-    copy(&mut decryptor, sink)?;
+    io::copy(&mut decryptor, sink)?;
 
     Ok(())
 }

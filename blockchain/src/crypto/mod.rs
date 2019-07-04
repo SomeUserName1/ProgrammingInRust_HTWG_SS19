@@ -1,5 +1,5 @@
-pub mod cipher;
 pub mod hash;
-pub mod key;
-pub mod merkle;
 pub mod sign;
+pub mod keys;
+pub mod cipher;
+pub mod merkle;

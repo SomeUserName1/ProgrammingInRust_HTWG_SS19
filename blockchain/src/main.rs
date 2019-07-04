@@ -9,7 +9,7 @@ mod crypto;
 mod node;
 /// Provides functionalities to store a blockchain in a database
 mod storage;
-
+// mod cli;
 
 use std::io;
 use std::io::Write;

@@ -7,10 +7,6 @@ use rocksdb;
 use super::storage::{Result, Storage};
 use rocksdb::DB;
 
-/// Rocksdb backend
-pub type Backend = rocksdb::DB;
-
-
 /// To be stored are:
 /// crypto: nodes pk + sk, revocation certificate and uuid, pk pairs of other nodes
 /// node: peer tables aka uuid, ip address pairs
@@ -28,21 +24,21 @@ pub type Backend = rocksdb::DB;
 #[fail(display = "RocksDB error")]
 struct Error(#[fail(cause)] rocksdb::Error);
 
-impl Storage for Backend {
+ impl Storage for DB {
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
-        let result = Backend::get(self, &key)
+        let result = DB::get(self, &key)
             .map(|opt| opt.map(|dbvec| dbvec.to_vec()))
             .map_err(Error)?;
         Ok(result)
     }
 
     fn put(&mut self, key: Vec<u8>, value: Vec<u8>) -> Result<()> {
-        Backend::put(self, &key, &value).map_err(Error)?;
+        DB::put(self, &key, &value).map_err(Error)?;
         Ok(())
     }
 
     fn delete(&mut self, key: &[u8]) -> Result<()> {
-        Backend::delete(self, &key).map_err(Error)?;
+        DB::delete(self, &key).map_err(Error)?;
         Ok(())
     }
 }

@@ -6,7 +6,8 @@ use serde::{Serialize, Deserialize}; // , de::{DeserializeOwned}};
 use crate::blockchain::{chain::Chain, block::Block, transaction::{Transaction}}; //, Transactional}};
 
 /// Define messages in terms of being a request, response or a broadcast
-/// Leave pgp for now, so also forget about signing for the moment
+/// FIXME: Error: openpgp::Tpk is not send so also not sync so it cant be used with futures...
+///         How to change the design? remap everything with tokio to sequential?
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum Messages<T> {
     // Request: Ping a node to register to it as new peer. SYNC
