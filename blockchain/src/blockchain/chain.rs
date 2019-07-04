@@ -1,4 +1,3 @@
-
 use std::fmt::{Debug, Write};
 use std::clone::Clone;
 
@@ -34,8 +33,7 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
         chain
     }
 
-    pub fn add_transaction(&mut self, transactions: &mut Vec<Transaction<T>>) ->
-    bool {
+    pub fn add_transaction(&mut self, transactions: &mut Vec<Transaction<T>>) -> bool {
         self.curr_trans.append(transactions);
         true
     }
@@ -119,10 +117,10 @@ impl<T: Serialize + DeserializeOwned + Debug + Clone + PartialEq + Transactional
 #[cfg(test)]
 mod tests {
     use crate::blockchain::chain::Chain;
-    use crate::blockchain::transaction::CryptoPayload;
+    use crate::blockchain::transaction::{CryptoPayload, Transactional};
 
     #[test]
-    fn create_crpyto_block_chain() {
+    fn create_crypto_block_chain() {
         let miner_addr = String::from("Hans");
         let difficulty = 1;
         let chain = Chain::<CryptoPayload>::new(miner_addr, difficulty);
@@ -130,6 +128,27 @@ mod tests {
         assert_eq!(chain.chain.len(), 1);
         assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
         assert_eq!(chain.curr_trans.len(), 0);
+        assert_eq!(chain.reward, 100);
+    }
+
+    #[test]
+    fn add_crypto_transaction_to_block_chain() {
+        let miner_addr = String::from("Hans");
+        let difficulty = 1;
+        let mut chain = Chain::<CryptoPayload>::new(miner_addr.clone(), difficulty);
+
+        let crypto_payload = CryptoPayload {
+            receiver: String::from("Peter"),
+            amount: 42
+        };
+        let mut transaction = vec![CryptoPayload::new(miner_addr, crypto_payload)];
+
+
+        chain.add_transaction(&mut transaction);
+
+        assert_eq!(chain.chain.len(), 1);
+        assert_eq!(chain.chain.get(0).unwrap().header.difficulty, 1);
+        assert_eq!(chain.curr_trans.len(), 1);
         assert_eq!(chain.reward, 100);
     }
 }
