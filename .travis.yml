@@ -1,4 +1,6 @@
 language: rust
+before install:
+    sudo apt install -y nettle-bin nettle-dev
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
