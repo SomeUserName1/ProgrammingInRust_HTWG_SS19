@@ -1,5 +1,5 @@
 language: rust
-before install:
+before_install:
     sudo apt install -y nettle-bin nettle-dev
 env:
   - CRATE="blockchain"
