@@ -6,6 +6,7 @@ before_install:
     - ./configure
     - make
     - sudo make install
+    - cd ..
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
