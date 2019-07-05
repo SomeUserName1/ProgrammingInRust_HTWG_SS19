@@ -1,11 +1,11 @@
 language: rust
 before_install:
-    git clone https://git.lysator.liu.se/nettle/nettle
-    cd nettle
-    ./.bootstrap
-    ./configure
-    make
-    sudo make install
+    - git clone https://git.lysator.liu.se/nettle/nettle
+    - cd nettle
+    - ./.bootstrap
+    - ./configure
+    - make
+    - sudo make install
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
