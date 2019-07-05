@@ -13,7 +13,6 @@ use uuid::Uuid;
 //use sequoia_openpgp as openpgp;
 use crate::blockchain::chain::Chain;
 use crate::blockchain::transaction::{Transaction, Transactional};
-use crate::crypto::keys; // {keys, sign, cipher};
 
 use super::messages::Messages;
 use super::codec::MessagesCodec;
@@ -61,7 +60,7 @@ where T: Transactional + 'static + Send + Sync,
 {
     pub fn new(addr: SocketAddr) -> NodeInner<T> {
         let id = Uuid::new_v4();
-        let (_keys, _) = keys::generate(id).expect("Failed to generate keys!");
+//        let (_keys, _) = keys::generate(id).expect("Failed to generate keys!");
         NodeInner {
             id,
             //keys,

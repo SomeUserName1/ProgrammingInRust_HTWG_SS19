@@ -22,6 +22,7 @@ time = "0.1.42"
 # Crypto
 sequoia-openpgp = "0.8" # see bottom note
 sha3 = "0.8.2"
+rpassword = "*"
 
 # P2P
 tokio = "0.1"
