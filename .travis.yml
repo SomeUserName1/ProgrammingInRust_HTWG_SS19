@@ -1,6 +1,11 @@
 language: rust
 before_install:
-    sudo apt install -y nettle-bin nettle-dev
+    git clone https://git.lysator.liu.se/nettle/nettle
+    cd nettle
+    ./.bootstrap
+    ./configure
+    make
+    sudo make install
 env:
   - CRATE="blockchain"
   - CRATE="presentations/concurrency/"
