@@ -7,9 +7,6 @@ use openpgp::constants::SymmetricAlgorithm;
 use openpgp::serialize::stream::*;
 use openpgp::parse::stream::*;
 
-//use crate::node::messages::Messages;
-use crate::blockchain::transaction::Transactional;
-
 use super::sign::Helper;
 
 //TODO: sign and verify transactions, not bytes

@@ -6,7 +6,6 @@ use std::sync::{Arc, RwLock};
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc;
 use tokio::io;
-use tokio::prelude::*;
 use tokio::codec;
 use tokio::net::{TcpStream, TcpListener};
 use tokio::timer::Interval;
@@ -40,17 +39,17 @@ pub struct NodeInner<T> {
 impl<T> Node<T> 
 where T: Transactional + Send + Sync + 'static 
 {
-    fn new(addr: SocketAddr) -> Node<T> {
+    fn new(addr: &SocketAddr) -> Node<T> {
         Node {
-            inner: Arc::new(RwLock::new(NodeInner::<T>::new(addr))),
+            inner: Arc::new(RwLock::new(NodeInner::<T>::new(*addr))),
         }
     }
 
     pub fn run<I: 'static + Iterator<Item=SocketAddr>>(&self, addrs: I) -> Result<(), io::Error> {
-        let inner = self.inner.clone().into_inner().unwrap();
+        let node = self.inner.clone();
        // spawn a server to accept incoming connections and spawn clients, which handle the
        // messages for each peer one
-       tokio::run(inner.serve(addrs).map_err(|e| println!("{}", e)));
+       tokio::run((node.read().unwrap()).serve(addrs).map_err(|e| println!("{}", e)));
 
       Ok(())
     }
@@ -73,55 +72,61 @@ where T: Transactional + 'static + Send + Sync,
         }
     }
 
-    fn start_client(&self, addr: SocketAddr) -> impl Future<Item=(), Error=io::Error> + 'static {
+    fn start_client(&self, addr: &SocketAddr) -> impl Future<Item=(), Error=io::Error> {
         println!("Starting client for {}", addr);
         let inner = self.clone();
         // Define the client
-         TcpStream::connect(&addr).and_then(|socket| {
+         let client = TcpStream::connect(&addr).and_then(move |socket| {
             println!("connected! local: {:?}, peer: {:?}", socket.local_addr(), socket.peer_addr());
             let framed_socket = codec::Framed::new(socket, MessagesCodec::<T>::new());
 
             let (sink, stream) = framed_socket.split();
             let (tx, rx): (Tx<T>, Rx<T>) = mpsc::unbounded();
-
+            
+            let tx1 = tx.clone();
+            let inner1 = inner.clone();
             // process messages from other clients
-            let read = stream.for_each(|msg| {
-                    inner.clone().process(msg, tx.clone())
+            let read = stream.for_each(move |msg| {
+                    inner1.clone().process(msg, &tx1.clone())
             })
             .then(|e| {
                 println!("{:?}", e);
                 Ok(())
             });
             tokio::spawn(read);
-
+            
+            let tx2 = tx.clone();
+            let inner2 = inner.clone();
             // Send Ping to bootstrap
-            mpsc::UnboundedSender::unbounded_send(&tx.clone(),
-                                                  Messages::<T>::Ping((inner.id, inner.addr.clone())))
+            mpsc::UnboundedSender::unbounded_send(&tx2.clone(),
+                                                  Messages::<T>::Ping((inner2.id, inner2.addr.clone())))
                .expect("Ping failed");
 
             tokio::spawn(sink.send_all(
-                    rx.map_err(|e| io::Error::new(io::ErrorKind::Other, "Error")))
+                    rx.map_err(|_| io::Error::new(io::ErrorKind::Other, "Error, {}", )))
                         .then(|_| Err(()))
             );
             Ok(())
-        })
+        });
+         client
     }
 
-    pub fn serve<I: Iterator<Item=SocketAddr>>(&self, addrs: I) -> impl Future<Item=(), Error=io::Error> + 'static {
-        let mut inner = self.clone();
+    pub fn serve<I: Iterator<Item=SocketAddr>>(&self, addrs: I) -> impl Future<Item=(), Error=io::Error> {
+        let inner = self.clone();
         // for each address in the initial peer table, spawn a client to handle the messages
         // sent by this client
         for addr in addrs {
             tokio::spawn(
-                inner.start_client(addr)
+                inner.start_client(&addr)
                 .then(move |x| {
                     println!("client {} started {:?}", addr, x);
                     Ok(())
             }));
         }
-
-        let cache_reset = Interval::new(Instant::now(), Duration::from_secs(30*60)).for_each(|_| {
-            inner.alt_chains.retain(|(count, chain)| count > &50);
+        
+        let inner1 = inner.clone();
+        let cache_reset = Interval::new(Instant::now(), Duration::from_secs(30*60)).for_each(move |_| {
+            inner1.clone().alt_chains.retain(|(count, _)| count > &50);
             Ok(())
             }).map_err(|e| panic!("interval errored, {:?}", e));
         // Delete the list of alternative chains all 30 min
@@ -145,7 +150,7 @@ where T: Transactional + 'static + Send + Sync,
             .for_each(move |socket| {
                 let peer = socket.peer_addr().unwrap();
                 tokio::spawn(
-                    inner.start_client(peer).then(move |x| {
+                    inner.start_client(&peer).then(move |_| {
                         Ok(())
                     }));
                 Ok(())
@@ -153,7 +158,7 @@ where T: Transactional + 'static + Send + Sync,
         srv
     }
 
-    fn process(&self, msg: Messages<T>, tx: Tx<T>) -> Result<(), io::Error> {
+    fn process(&self, msg: Messages<T>, tx: &Tx<T>) -> Result<(), io::Error> {
         let mut inner = self.clone();
         match msg {
             Messages::<T>::Ping(m) => inner.handle_ping(m, tx),
@@ -166,11 +171,13 @@ where T: Transactional + 'static + Send + Sync,
     fn gossip(&self, duration: Duration) -> impl Future<Item=(), Error=io::Error> + 'static {
         let inner = self.clone();
         Interval::new(Instant::now(), duration).for_each(move |_| {
-            let m = inner.peers.iter()
+            let m: Vec<(Uuid, SocketAddr)> = inner.peers.iter()
                 .map(|(k, v)| (k.clone(), v.1.clone()))
                 .collect();
-        for (tx, addr) in inner.peers.values() {
-            tx.unbounded_send(Messages::<T>::PeerList(m)).expect("Shit hit the fan");
+            let mut m1 = m.clone();
+        for (tx, _) in inner.peers.values() {
+            tx.unbounded_send(Messages::<T>::PeerList(m1)).expect("Shit hit the fan");
+             m1 = m.clone();
         }
             Ok(())
         })
@@ -180,31 +187,33 @@ where T: Transactional + 'static + Send + Sync,
 
 
 
-    fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: Tx<T>) -> Result<(), io::Error> {
+    fn handle_ping(&mut self, m: (Uuid, SocketAddr), tx: &Tx<T>) -> Result<(), io::Error> {
         let mut inner = self.clone();
         println!("Received ping from {:?}", m);
 
         match self.peers.get(&m.0) {
-            Some(_) => Ok(()),
             None => {
                 let tx1 = tx.clone();
-                inner.peers.insert(m.0, (tx, m.1));
-                tx.unbounded_send( Messages::<T>::Pong((inner.id, inner.addr, inner.chain.unwrap().1)))
+                inner.peers.insert(m.0, (tx1, m.1));
+                let tx2 = tx.clone();
+                let _ = tx2.unbounded_send( Messages::<T>::Pong((inner.id, inner.addr, inner.chain.unwrap().1)))
                     .map_err(|_| io::Error::new(io::ErrorKind::Other, "tx failed"));
                 Ok(())
-            }
-        };
-        Ok(())
+            },
+            _ => Ok(()),
+        }
     }
 
-    fn handle_pong(&mut self, m: (Uuid, SocketAddr, Chain<T>), tx: Tx<T>) -> Result<(), io::Error> {
+    fn handle_pong(&mut self, m: (Uuid, SocketAddr, Chain<T>), tx: &Tx<T>) -> Result<(), io::Error> {
         println!("received pong {:?}", m);
-        match &self.chain {
+
+        let chain1 = self.chain.clone();
+        match chain1 {
             Some((count, self_chain)) => {
                 //chains match, all good and break, else one needs majority voting
                 //consensus
                 match self_chain.eq(&m.2) {
-                    true => self.chain.unwrap().0 = count + 1,
+                    true => self.chain = Some((count + 1, self_chain)),
                     false => self.majority_consensus(m.2),
                 }
             }
@@ -212,20 +221,21 @@ where T: Transactional + 'static + Send + Sync,
         }
 
         match self.peers.get(&m.0) {
-            Some(_) => Ok(()),
             None => {
-                self.peers.insert(m.0, (tx, m.1));
+                self.peers.insert(m.0, (tx.clone(), m.1));
                 Ok(())
-            }
+            },
+            _ => Ok(())
+
         }
     }
 
-    fn handle_gossip(self, m: Vec<(Uuid, SocketAddr)>) -> Result<(), io::Error> {
+    fn handle_gossip(&self, m: Vec<(Uuid, SocketAddr)>) -> Result<(), io::Error> {
         let inner = self.clone();
         for (uuid, addr) in m {
             if !self.peers.contains_key(&uuid) {
-                tokio::spawn(inner.start_client(addr).then(|_| {
-                    println!("Started client for address {}", addr);
+                tokio::spawn(inner.start_client(&addr).then(move |_| {
+                    println!("Started client for address {}", addr.clone());
                     Ok(())
                 }));
             }
@@ -233,36 +243,38 @@ where T: Transactional + 'static + Send + Sync,
         Ok(())
     }
 
-    fn integrate_transaction(&self, m: Transaction<T>) -> Result<(), io::Error> {
-        match &self.chain {
-            Some((count, mut chain)) => {
+    fn integrate_transaction(&mut self, m: Transaction<T>) -> Result<(), io::Error> {
+        let chain1 = self.chain.clone();
+        match chain1 {
+            Some((_, mut chain)) => {
                 chain.add_transaction(&mut vec!(m));
                 if chain.get_no_curr_trans().eq(&0) {
-                    for (tx, addr) in self.peers.values() {
-                        tx.unbounded_send( Messages::<T>::Pong((self.id, self.addr, self.chain.unwrap().1)))
+                    for (tx, _) in self.peers.values() {
+                        let chain1 = self.chain.clone();
+                        let _ = tx.unbounded_send( Messages::<T>::Pong((self.id, self.addr, chain1.unwrap().1)))
                         .map_err(|_| io::Error::new(io::ErrorKind::Other, "tx failed"));
                     };
                 };
                 Ok(())
             }
             None => Ok(()),
-            _ => Ok(())
         }
-
     }
 
     fn majority_consensus(&mut self, chain: Chain<T>) {
         if self.alt_chains.len() < 1 {
-           self.alt_chains.push_back((1, chain));
+           self.alt_chains.push_back((1, chain.clone()));
             return;
         }
 
+       let alt_chains1 = self.alt_chains.clone(); 
         let matched = false;
-        for (count, sec_chain) in self.alt_chains {
+        for (mut count, sec_chain) in alt_chains1 {
             if sec_chain.eq(&chain) {
+                let chain1 = self.chain.clone();
                 count += 1;
-                if count > self.chain.unwrap().0 {
-                    let tmp = self.chain;
+                if count > chain1.unwrap().0.clone() {
+                    let tmp = self.chain.clone();
                     self.chain = Some((count, sec_chain));
                     self.alt_chains.push_front(tmp.unwrap());
                 }

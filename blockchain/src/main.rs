@@ -1,5 +1,5 @@
 //! A distributed generic blockchain written in rust.
-
+#![allow(dead_code)]
 
 /// The core datastrutures to provide a blockchain
 mod blockchain;

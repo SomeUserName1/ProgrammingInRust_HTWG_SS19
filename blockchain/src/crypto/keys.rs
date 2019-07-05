@@ -6,10 +6,6 @@ use openpgp::serialize::Serialize;
 use openpgp::parse::Parse;
 use uuid::Uuid;
 
-use crate::blockchain::transaction::Transactional;
-
-
-
 /// Simple Keyring
 /// Just maps known ids to TPKs
 struct Keyring {
