@@ -11,7 +11,7 @@ Also as we announced we couldn't estimate the amount of work and as the Insights
 - [x] generic transactions enabling different payloads
 
 ## Node: P2P server using blockchain 
-- [ ] node: handling requests/messages from either other nodes or the 
+- [x] node: handling requests/messages from either other nodes or the 
 command line, accepting incoming connections, answering peer discovery queries, 
 bootstrap peer network, create transactions and broadcast transactions and mined blocks
 - [x] Messages & Codec related to networking
