@@ -2,8 +2,6 @@
 
 ## Description: 
 Our goal was to provide a asynchronous-networking-cabaple decentralized blockchain, that is able to be set up with different (generic) Transaction payloads, which would have been signed with pgp and the traffic would have been encrypted by pgp. The keys as well as peer tables and the elder blocks should have been stored persistently to reduce the ram usage.  
-Due to a lack of time, resources (as with the participants let's not dive into this) and clear planable deadline anouncements, the asynchronous peer to peer server is still WIP as well as signing, encryption and storage, see the dev branch for those efforts.  
-Also as we announced we couldn't estimate the amount of work and as the Insights page shows it were quite some days and nights that were spent on this project.
 
 ## Blockchain
 - [x] chain: data structure, transactions consensus mechanisms/block mining
