@@ -1,19 +1,15 @@
 # PIR Blockchain
-## Participants:
-Difficult topic, let's skip that. Asume the process of writing this was a closure so it's anonymous and the lifetime ends on submission.  
 
 ## Description: 
 Our goal was to provide a asynchronous-networking-cabaple decentralized blockchain, that is able to be set up with different (generic) Transaction payloads, which would have been signed with pgp and the traffic would have been encrypted by pgp. The keys as well as peer tables and the elder blocks should have been stored persistently to reduce the ram usage.  
-Due to a lack of time, resources (as with the participants let's not dive into this) and clear planable deadline anouncements, the asynchronous peer to peer server is still WIP as well as signing, encryption and storage, see the dev branch for those efforts.  
-Also as we announced we couldn't estimate the amount of work and as the Insights page shows it were quite some days and nights that were spent on this project.
 
-## Blochain
+## Blockchain
 - [x] chain: data structure, transactions consensus mechanisms/block mining
 - [x] block: central data structure: stores transactions in a merkle tree 
 - [x] generic transactions enabling different payloads
 
 ## Node: P2P server using blockchain 
-- [ ] node: handling requests/messages from either other nodes or the 
+- [x] node: handling requests/messages from either other nodes or the 
 command line, accepting incoming connections, answering peer discovery queries, 
 bootstrap peer network, create transactions and broadcast transactions and mined blocks
 - [x] Messages & Codec related to networking
