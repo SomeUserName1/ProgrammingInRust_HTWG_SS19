@@ -1,4 +1,12 @@
 language: rust
+#before_install:
+#    - git clone https://git.lysator.liu.se/nettle/nettle
+#    - cd nettle
+#    - ./.bootstrap
+#    - ./configure
+#    - make
+#    - sudo make install
+#    - cd ..
 env:
   - CRATE="blockchain"
 script:

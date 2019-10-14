@@ -1,27 +1,24 @@
-//! The transactions of our chain. A transaction consists of a sender
-//! and the payload. Depending on the type of blockchain, different
-//! payloads can be chosen, such as: CryptoPayload (ala cryptocurrency
-//! containing a value), VotePayload (containing the choice) and CodePayload
-//! (like git, a file name, file content and a message).
-
 use std::marker::Sized;
 use std::clone::Clone;
 use std::fmt::Debug;
 use std::fmt::Write;
+use std::sync::{Arc, RwLock};
 
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 
+
 /// The transaction stored in a block of the blockchain.
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction<T> {
     /// The sender of the transaction.
     pub sender: String,
     /// The payload of the transaction.
-    pub payload: T,
+    pub payload: Arc<RwLock<T>>,
 }
 
+
 impl<T> Transaction<T>
-    where T: std::fmt::Debug {
+    where T: Debug {
     /// Formats a transaction with all information.
     pub fn fmt(&self) -> String {
         let mut str = String::new();
@@ -38,19 +35,18 @@ impl<T> Transaction<T>
 }
 
 pub trait Transactional
-    where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
+where Self: Sized + Send + Serialize + DeserializeOwned + PartialEq + Eq + Debug + Clone {
     /// Creates a new transaction with a sender and the specified payload.
-    fn new(sender: String, payload: Self) -> Transaction<Self> { // , key:
+    fn new(sender: String, payload: Self) -> Transaction<Self> { // , key: sequoia_openpgp::TPK
         Transaction {
             sender,
-            payload,
+            payload: Arc::new(RwLock::new(payload)),
+            // FIXME create the sender signature with the key. 
         }
     }
 
-    /// For each type of transaction, we need to be able to initialize the chain.
     fn genesis(miner_address: String, reward: u32) -> Transaction<Self>;
 }
-
 
 // Examples: Crypto currency, Code, voting, timestamping of arbitary objects
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -62,7 +58,7 @@ pub struct CryptoPayload {
     pub amount: u32,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// A payload for a voting system.
 pub struct VotePayload {
     /// The voted party from the sender.
@@ -80,41 +76,40 @@ pub struct CodePayload {
     pub commit_message: String,
 }
 
-/// Creates a classic genesis block for cryptocurrency blockchains.
 impl Transactional for CryptoPayload {
     fn genesis(miner_address: String, reward: u32) -> Transaction<CryptoPayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: CryptoPayload {
+            payload: Arc::new(RwLock::new(CryptoPayload {
                 receiver: miner_address,
                 amount: reward,
-            },
+            })),
         }
     }
 }
 
-/// Creates a "root" vote.
 impl Transactional for VotePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<VotePayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: VotePayload {
+            payload: Arc::new(RwLock::new(VotePayload {
                 vote: String::from("Root"),
-            },
+            })),
         }
     }
 }
 
-/// Creates an initial commit ala git.
 impl Transactional for CodePayload {
     fn genesis(_miner_address: String, _reward: u32) -> Transaction<CodePayload> {
         Transaction {
             sender: String::from("Root"),
-            payload: CodePayload {
+            payload: Arc::new(RwLock::new(CodePayload {
                 file_name: String::from("Readme.md"),
                 contents: String::from(""),
                 commit_message: String::from("Initialize Repository"),
-            },
+            })),
         }
     }
 }
+
+

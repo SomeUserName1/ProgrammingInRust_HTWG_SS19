@@ -1,167 +1,121 @@
-//! # Overview
-//!
-//! A locally stored blockchain written in Rust
-//!
-//! Following commands are available:
-//!
-//! - ```new transaction``` to create a new transaction and add it to the blockchain.
-//! - ```mine block``` to mine a new block and add it to the blockchain.
-//! - ```update difficulty``` to update the difficulty to mine a new block.
-//! - ```update reward``` to update the reward a miner gets, when a new block is mined.
-//! - ```print``` prints the blockchain.
-//! - ```help``` prints the available commands.
-//! - ```exit``` exits the programm.
+//! A distributed generic blockchain written in rust.
+#![allow(dead_code)]
 
-/// The core datastructures to create a blockchain
+/// The core datastrutures to provide a blockchain
 mod blockchain;
+/// Provides functionalities to create gpg keys and signature/verify or encrpyt/decrypt transactions.
 mod crypto;
+/// Provides a peer to peer network to distribute the blockchain
+mod node;
+/// Provides functionalities to store a blockchain in a database
+mod storage;
+// mod cli;
 
 use std::io;
-use std::io::{Write, BufRead};
-
-use blockchain::chain::Chain;
-use blockchain::transaction::{CryptoPayload, Transactional};
+use std::io::Write;
 use std::process::exit;
+
+//use blockchain::chain;
+//use blockchain::transaction::{CryptoPayload, Transactional};
 
 fn main() {
     print!("Please input a miner address: ");
     let miner_addr = read_user_input();
 
-    let mut difficulty: u32;
-
-    loop {
-        print!("Please enter the difficulty to mine a new block: ");
-        difficulty = match read_user_input().parse() {
-            Ok(difficulty) => difficulty,
-            Err(_) => {
-                0
-            }
-        };
-
-        if difficulty == 0 {
-            println!("Please enter only numbers greater than 0!");
-        } else {
-            break;
-        }
-    }
-
-    println!("Generating genesis block...");
-    let mut chain = Chain::<CryptoPayload>::new(
-        difficulty, miner_addr.trim().to_string());
-
-    loop {
-        print!("Please enter a command:");
-        let command = read_user_input();
-
-        match command.as_ref() {
-            "new transaction" => new_transaction(&mut chain),
-            "help" => print_help_text(),
-            "print" => println!("{}", chain.fmt()),
-            "mine block" => mine_block(&mut chain, miner_addr.clone()),
-            "update difficulty" => change_difficulty(&mut chain),
-            "update reward" => update_reward(&mut chain),
-            "exit" => {
-                println!("exiting!");
-                exit(0);
-            }
-            _ => println!("Unknown command: {}! For help type \"help\".", command)
-        }
-    }
-}
-
-/// Prints the available commands.
-fn print_help_text() {
-    println!("\nFollowing commands are available:\n");
-    println!("new transaction   --------------- Creates a new transaction.");
-    println!("mine block        --------------- Mines a new block and adds it to the blockchain.");
-    println!("update difficulty --------------- Changes the difficulty to mine a new block.");
-    println!("update reward     --------------- Changes the reward a miner gets, when a new block is mined.");
-    println!("print             --------------- Prints the blockchain.");
-    println!("exit              --------------- Exits the programm.\n")
-}
-
-/// Reads the input from a user and returns it.
-fn read_user_input() -> String {
-    let mut user_input = String::new();
+    // TODO start node from here
+    let mut miner_addr = String::new();
+    let mut difficulty = String::new();
+    let mut choice = String::new();
 
     io::stdout().flush().expect("IO Error");
-    match io::stdin().lock().read_line(&mut user_input) {
-        Ok(_) => user_input.trim().to_string(),
-        Err(e) => {
-            println!("{}", e);
-            exit(-1);
-        }
-    }
-}
-
-/// Adds a new transaction to the blockchain.
-fn new_transaction(chain: &mut Chain<CryptoPayload>) {
-    print!("Please enter the sender address:");
-    let sender = read_user_input();
-
-    print!("Please enter the receiver address:");
-    let receiver = read_user_input();
-
-    print!("Please enter the amount to transfer: ");
-    let amount = read_user_input();
-
-    let crypto_payload = CryptoPayload {
-        receiver: receiver.trim().to_string(),
-        amount: amount.trim().parse().unwrap(),
-    };
-    let mut transaction = vec![CryptoPayload::new(sender, crypto_payload)];
-
-    match chain.add_transaction(&mut transaction) {
-        true => println!("Transaction was successfully added."),
-        false => println!("Transaction failed!")
-    }
-}
-
-/// Adds a new block to the blockchain
-fn mine_block(chain: &mut Chain<CryptoPayload>, miner: String) {
-    println!("Generating block...");
-    match chain.add_new_block(miner) {
-        true => println!("Block was generated successfully."),
-        false => println!("Block generation failed!"),
-    }
-}
-
-/// Changes the difficulty to mine a new block.
-fn change_difficulty(chain: &mut Chain<CryptoPayload>) {
-    let mut new_difficulty: u32;
+    io::stdin().read_line(&mut difficulty).expect("IO Error");
+    //let diff = difficulty.trim().parse::<u32>().expect("we need an integer");
+    println!("generating genesis block! ");
+    // let mut chain = chain::Chain::<CryptoPayload>::new(miner_addr.trim().to_string(), diff);
 
     loop {
-        print!("Please enter the new difficulty: ");
-        new_difficulty = match read_user_input().parse() {
-            Ok(difficulty) => difficulty,
-            Err(_) => {
-                0
+        println!("Menu");
+        println!("1) New Transaction");
+        println!("2) Mine block");
+        println!("3) Change Difficulty");
+        println!("4) Change Reward");
+        println!("5) Print Blockchain");
+        println!("0) Exit");
+        print!("Enter your choice: ");
+        io::stdout().flush().expect("IO Error");
+        choice.clear();
+        io::stdin().read_line(&mut choice).expect("IO Error");
+        println!("");
+
+        match choice.trim().parse().unwrap() {
+            0 =>
+                {
+                    println!("exiting!");
+                    exit(0);
+                }
+            1 => {
+                let mut sender = String::new();
+                let mut receiver = String::new();
+                let mut amount = String::new();
+
+           //     print!("enter sender address:");
+                io::stdout().flush().expect("IO Error");
+                io::stdin().read_line(&mut sender).expect("IO Error");
+                print!("enter receiver address: ");
+                io::stdout().flush().expect("IO Error");
+                io::stdin().read_line(&mut receiver).expect("IO Error");
+                print!("Enter amount: ");
+                io::stdout().flush().expect("IO Error");
+                io::stdin().read_line(&mut amount).expect("IO Error");
+
+                // let res = chain.add_transaction(&mut vec![
+                 //   CryptoPayload::new(
+                   //     sender.trim().to_string(),
+                    //    CryptoPayload {
+                 //           receiver: receiver.trim().to_string(),
+                 //           amount: amount.trim().parse().unwrap(),
+                 //       })
+                //]);
+
+                //match res {
+                  //  true => println!("transaction added"),
+                 //   false => println!("transaction failed"),
+               // }
             }
-        };
-
-        if new_difficulty == 0 {
-            println!("Please enter only numbers greater than 0!");
-        } else {
-            break;
-        }
-    }
-
-    match chain.update_difficulty(new_difficulty) {
-        true => println!("Updated difficulty successfully"),
-        false => println!("Failed to update difficulty!")
-    }
-}
-
-/// Updates the reward a miner gets, when a new block is mined.
-fn update_reward(chain: &mut Chain<CryptoPayload>) {
-    let mut new_reward: u32;
-
-    loop {
-        print!("Please enter the new reward: ");
-        new_reward = match read_user_input().parse() {
-            Ok(difficulty) => difficulty,
-            Err(_) => {
-                0
+            2 =>
+                {
+                    println!("Generating block");
+            //        let res = chain.add_new_block();
+             //       match res {
+              //          true => println!("Block generated successfully"),
+               //         false => println!("Block generation failed"),
+                //    }
+                }
+            3 =>
+                {
+           //         let mut new_diff = String::new();
+            //        print!("enter new difficulty: ");
+             //       io::stdout().flush().expect("IO Error");
+           //         io::stdin().read_line(&mut new_diff).expect("IO Error");
+          //          let res = chain.update_difficulty(new_diff.trim().parse().unwrap());
+         //           match res {
+        //                true => println!("Updated Difficulty"),
+       //                 false => println!("Failed Update Difficulty"),
+       //             }
+                }
+            4 => {
+        //        let mut new_reward = String::new();
+         //       print!("Enter new reward: ");
+         //       io::stdout().flush().expect("IO Error");
+         //       io::stdin().read_line(&mut new_reward).expect("IO Error");
+         //       let res = chain.update_reward(new_reward.trim().parse().unwrap());
+         //       match res {
+         //           true => println!("Updated reward"),
+         //           false => println!("Failed Update reward"),
+         //       }
+            }
+            5 => {
+          //      println!("{}", chain.fmt());
             }
         };
 
@@ -170,11 +124,6 @@ fn update_reward(chain: &mut Chain<CryptoPayload>) {
         } else {
             break;
         }
-    }
-
-    match chain.update_reward(new_reward) {
-        true => println!("Updated reward successfully."),
-        false => println!("Failed to update reward!")
     }
 }
 
